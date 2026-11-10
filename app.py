@@ -41,6 +41,16 @@ def index():
     )
 
 
+@app.route("/settings")
+@app.route("/engine-settings")
+def engine_settings():
+    """Render dedicated Engine Settings configuration page."""
+    return render_template(
+        "settings.html",
+        default_worker_url=HF_WORKER_URL
+    )
+
+
 @app.route("/api/status", methods=["GET"])
 def check_worker_status():
     """

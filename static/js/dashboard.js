@@ -62,48 +62,145 @@ const chartPlaceholder = document.getElementById('chart-placeholder');
 const detectedSchemaPill = document.getElementById('detected-schema-pill');
 const profilesTableBody = document.getElementById('profiles-table-body');
 
+// Global toggle for Engine Settings Modal
+window.toggleSettingsModal = function(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const modal = document.getElementById('settings-modal');
+  if (modal) {
+    modal.classList.toggle('hidden');
+    // Sync current URL into modal input
+    const modalInput = document.getElementById('modal-worker-url');
+    if (modalInput && inputWorkerUrl) {
+      modalInput.value = inputWorkerUrl.value;
+    }
+  }
+};
+
+window.closeSettingsModal = function() {
+  const modal = document.getElementById('settings-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+};
+
 // -------------------------------------------------------------
 // Initialization & Worker Connection Management
 // -------------------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
+function bootstrapApp() {
   initUIListeners();
   checkWorkerHealth();
-  // Periodically verify connection every 30 seconds
   setInterval(checkWorkerHealth, 30000);
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootstrapApp);
+} else {
+  bootstrapApp();
+}
 
 function initUIListeners() {
   // Slider update
-  kSlider.addEventListener('input', (e) => {
-    kBadge.textContent = `K = ${e.target.value}`;
-  });
+  if (kSlider) {
+    kSlider.addEventListener('input', (e) => {
+      kBadge.textContent = `K = ${e.target.value}`;
+    });
+  }
 
-  // Config drawer toggle
-  btnToggleConfig.addEventListener('click', () => {
-    workerConfigDrawer.classList.toggle('hidden');
-  });
+  // Config drawer / modal toggle
+  if (btnToggleConfig) {
+    btnToggleConfig.addEventListener('click', (e) => {
+      window.toggleSettingsModal(e);
+    });
+  }
 
-  // Save / Update Worker URL
-  btnSaveWorkerUrl.addEventListener('click', () => {
-    const url = inputWorkerUrl.value.trim();
-    if (url) {
-      localStorage.setItem('colab_worker_url', url);
-      checkWorkerHealth();
+  // Close modal when clicking backdrop
+  const settingsModal = document.getElementById('settings-modal');
+  if (settingsModal) {
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) {
+        window.closeSettingsModal();
+      }
+    });
+  }
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      window.closeSettingsModal();
     }
   });
 
+  // Modal elements
+  const modalInput = document.getElementById('modal-worker-url');
+  const modalBtnPing = document.getElementById('modal-btn-ping');
+  const modalBtnSave = document.getElementById('modal-btn-save');
+  const modalPresetHf = document.getElementById('modal-preset-hf');
+  const modalPresetLocal = document.getElementById('modal-preset-local');
+
+  if (modalPresetHf && modalInput) {
+    modalPresetHf.addEventListener('click', () => {
+      modalInput.value = 'https://progressmurau-city-business-clustering.static.hf.space';
+    });
+  }
+
+  if (modalPresetLocal && modalInput) {
+    modalPresetLocal.addEventListener('click', () => {
+      modalInput.value = 'http://localhost:7860';
+    });
+  }
+
+  if (modalBtnSave && modalInput) {
+    modalBtnSave.addEventListener('click', () => {
+      const url = modalInput.value.trim();
+      if (url) {
+        localStorage.setItem('hf_worker_url', url);
+        localStorage.setItem('colab_worker_url', url);
+        if (inputWorkerUrl) inputWorkerUrl.value = url;
+        checkWorkerHealth();
+        window.closeSettingsModal();
+        showAlert('success', `Updated and connected to ML Engine at: ${url}`);
+      }
+    });
+  }
+
+  if (modalBtnPing && modalInput) {
+    modalBtnPing.addEventListener('click', () => {
+      const url = modalInput.value.trim();
+      if (url && inputWorkerUrl) inputWorkerUrl.value = url;
+      checkWorkerHealth();
+    });
+  }
+
+  // Save / Update Worker URL from quick drawer
+  if (btnSaveWorkerUrl) {
+    btnSaveWorkerUrl.addEventListener('click', () => {
+      const url = inputWorkerUrl.value.trim();
+      if (url) {
+        localStorage.setItem('hf_worker_url', url);
+        localStorage.setItem('colab_worker_url', url);
+        if (modalInput) modalInput.value = url;
+        checkWorkerHealth();
+      }
+    });
+  }
+
   // Reset Worker URL
-  btnResetWorkerUrl.addEventListener('click', () => {
-    localStorage.removeItem('hf_worker_url');
-    localStorage.removeItem('colab_worker_url');
-    inputWorkerUrl.value = 'https://progressmurau-city-business-clustering.static.hf.space';
-    checkWorkerHealth();
-  });
+  if (btnResetWorkerUrl) {
+    btnResetWorkerUrl.addEventListener('click', () => {
+      localStorage.removeItem('hf_worker_url');
+      localStorage.removeItem('colab_worker_url');
+      const defUrl = 'https://progressmurau-city-business-clustering.static.hf.space';
+      inputWorkerUrl.value = defUrl;
+      if (modalInput) modalInput.value = defUrl;
+      checkWorkerHealth();
+    });
+  }
 
   // Load saved worker URL if present
-  const savedUrl = localStorage.getItem('colab_worker_url');
+  const savedUrl = localStorage.getItem('hf_worker_url') || localStorage.getItem('colab_worker_url');
   if (savedUrl) {
     inputWorkerUrl.value = savedUrl;
+    if (modalInput) modalInput.value = savedUrl;
   }
 
   // Dropzone file handling
@@ -174,23 +271,41 @@ function handleFileSelected() {
 // Health Check & Worker Status
 // -------------------------------------------------------------
 async function checkWorkerHealth() {
-  const currentWorkerUrl = inputWorkerUrl.value.trim();
-  statusDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-  statusText.textContent = 'Pinging ML Engine...';
-  latencyTag.classList.add('hidden');
+  const currentWorkerUrl = (inputWorkerUrl ? inputWorkerUrl.value.trim() : '') || 'https://progressmurau-city-business-clustering.static.hf.space';
+  if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+  if (statusText) statusText.textContent = 'Pinging ML Engine...';
+  if (latencyTag) latencyTag.classList.add('hidden');
+
+  const modalDot = document.getElementById('modal-status-dot');
+  const modalText = document.getElementById('modal-status-text');
+  const modalLat = document.getElementById('modal-latency-text');
+  if (modalDot) modalDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+  if (modalText) {
+    modalText.textContent = 'Pinging...';
+    modalText.className = 'text-xs font-mono font-semibold text-amber-300';
+  }
 
   try {
     const res = await fetch(`/api/status?worker_url=${encodeURIComponent(currentWorkerUrl)}`);
     const data = await res.json();
 
     if (res.ok && data.status === 'online') {
-      statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-lg shadow-emerald-500/50';
-      statusText.textContent = 'Colab ML Engine: Online';
-      statusText.className = 'text-emerald-300 font-semibold text-xs';
-      if (data.latency_ms) {
+      if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-lg shadow-emerald-500/50';
+      if (statusText) {
+        statusText.textContent = 'HF Spaces ML Engine: Online';
+        statusText.className = 'text-emerald-300 font-semibold text-xs';
+      }
+      if (data.latency_ms && latencyTag) {
         latencyTag.textContent = `${data.latency_ms} ms`;
         latencyTag.classList.remove('hidden');
       }
+
+      if (modalDot) modalDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+      if (modalText) {
+        modalText.textContent = 'ONLINE (200 OK)';
+        modalText.className = 'text-xs font-mono font-semibold text-emerald-400';
+      }
+      if (modalLat && data.latency_ms) modalLat.textContent = `${data.latency_ms} ms`;
     } else {
       markWorkerOffline(data.error || 'Worker unavailable');
     }
@@ -200,10 +315,22 @@ async function checkWorkerHealth() {
 }
 
 function markWorkerOffline(errMsg) {
-  statusDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50';
-  statusText.textContent = 'Colab Engine: Offline';
-  statusText.className = 'text-rose-400 font-medium text-xs';
-  latencyTag.classList.add('hidden');
+  if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50';
+  if (statusText) {
+    statusText.textContent = 'HF ML Engine: Offline';
+    statusText.className = 'text-rose-400 font-medium text-xs';
+  }
+  if (latencyTag) latencyTag.classList.add('hidden');
+
+  const modalDot = document.getElementById('modal-status-dot');
+  const modalText = document.getElementById('modal-status-text');
+  const modalLat = document.getElementById('modal-latency-text');
+  if (modalDot) modalDot.className = 'w-2 h-2 rounded-full bg-rose-500';
+  if (modalText) {
+    modalText.textContent = 'OFFLINE';
+    modalText.className = 'text-xs font-mono font-semibold text-rose-400';
+  }
+  if (modalLat) modalLat.textContent = 'N/A';
 }
 
 // -------------------------------------------------------------

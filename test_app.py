@@ -26,6 +26,14 @@ def test_flask_routes():
     assert b"business_id" in res_agg.data
     print("Test 3 Passed: GET /sample-data/aggregated served aggregated CSV.")
 
+    # 4. Test GET /settings and /engine-settings
+    res_set = client.get("/settings")
+    assert res_set.status_code == 200
+    assert b"Engine Configuration Settings" in res_set.data
+    res_eng = client.get("/engine-settings")
+    assert res_eng.status_code == 200
+    print("Test 4 Passed: GET /settings and /engine-settings served settings page.")
+
     print("\nAll Flask Web App route tests passed successfully!")
 
 if __name__ == "__main__":

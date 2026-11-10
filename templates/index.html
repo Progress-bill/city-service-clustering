@@ -75,14 +75,19 @@
           <span id="latency-tag" class="hidden text-[10px] text-slate-400 font-mono"></span>
         </div>
 
-        <button id="btn-toggle-config" title="Configure Remote Worker URL" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700 text-xs flex items-center space-x-1.5">
-          <i class="fa-solid fa-sliders"></i>
-          <span class="hidden sm:inline">Engine Settings</span>
-        </button>
+        <div class="flex items-center space-x-1.5">
+          <button id="btn-toggle-config" onclick="toggleSettingsModal(event)" title="Configure Remote Worker URL" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700 text-xs flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-sliders text-indigo-400"></i>
+            <span class="hidden sm:inline">Engine Settings</span>
+          </button>
+          <a href="/settings" title="Open Dedicated Settings Page" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition border border-slate-700 text-xs flex items-center" target="_self">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- Hidden Worker Config Drawer -->
+    <!-- Hidden Worker Config Drawer (Quick Access Bar) -->
     <div id="worker-config-drawer" class="hidden border-t border-slate-800 bg-slate-900/95 px-4 py-3">
       <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div class="flex items-center space-x-2 w-full sm:w-auto">
@@ -95,12 +100,83 @@
             Update &amp; Ping
           </button>
           <button id="btn-reset-worker-url" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700">
-            Reset to Default
+            Reset
           </button>
+          <a href="/settings" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700 text-xs">
+            Full Page <i class="fa-solid fa-arrow-right ml-1"></i>
+          </a>
         </div>
       </div>
     </div>
   </header>
+
+  <!-- High-Visibility Engine Settings Modal Dialog -->
+  <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm transition-all">
+    <div class="relative w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-5">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Engine Configuration Settings</h3>
+            <p class="text-[11px] text-slate-400">Connect to your persistent ML compute cluster</p>
+          </div>
+        </div>
+        <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- Endpoint Input -->
+      <div class="space-y-2">
+        <label for="modal-worker-url" class="block text-xs font-semibold text-slate-300">
+          Compute Engine URL:
+        </label>
+        <input type="text" id="modal-worker-url" value="{{ default_worker_url }}" placeholder="https://progressmurau-city-business-clustering.static.hf.space" class="w-full px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        <div class="flex items-center justify-between pt-1">
+          <button id="modal-preset-hf" type="button" class="text-[11px] text-indigo-400 hover:underline">
+            <i class="fa-solid fa-cloud mr-1"></i>Use Hugging Face Default
+          </button>
+          <button id="modal-preset-local" type="button" class="text-[11px] text-slate-400 hover:underline">
+            <i class="fa-solid fa-laptop mr-1"></i>Use Localhost (7860)
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Ping Area in Modal -->
+      <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-400 font-medium">Engine Status:</span>
+          <div id="modal-status-badge" class="flex items-center space-x-2">
+            <span id="modal-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span id="modal-status-text" class="text-xs font-mono font-semibold text-amber-300">Checking...</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <span>Latency:</span>
+          <span id="modal-latency-text" class="font-mono text-slate-300">&mdash;</span>
+        </div>
+      </div>
+
+      <!-- Modal Footer Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800">
+        <a href="/settings" class="text-xs text-indigo-400 hover:text-indigo-300 hover:underline flex items-center space-x-1">
+          <span>Open Full Page Settings</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+        </a>
+        <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+          <button id="modal-btn-ping" type="button" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
+            Ping
+          </button>
+          <button id="modal-btn-save" type="button" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition">
+            Save &amp; Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Main Container -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
