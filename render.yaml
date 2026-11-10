@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: city-service-clustering-dashboard
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    plan: free
+    region: oregon
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: HF_WORKER_URL
+        value: https://progressmurau-city-business-clustering.static.hf.space
+      - key: FLASK_ENV
+        value: production
