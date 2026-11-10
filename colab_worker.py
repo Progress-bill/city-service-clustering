@@ -1,24 +1,15 @@
 """
 Colab ML Worker: High-Performance FastAPI Engine for Review Clustering
 ======================================================================
-Designed to execute in Google Colab (or any remote Python runtime) to perform:
-1. Review feature aggregation (mean_rating, std_rating, log_review_count, avg_review_length)
-2. Tabular numeric feature ingestion
-3. StandardScaler standardisation
-4. K-Means clustering (K=2 to 10)
-5. Metric computation (Silhouette, Davies-Bouldin, Inertia)
-6. 2D PCA projection for interactive scatter visualization
-7. Ngrok static tunnel exposure via 'doctrine-wages-hubcap.ngrok-free.dev' (or free dynamic tunnel)
-
-Dependencies:
-!pip install fastapi uvicorn pyngrok nest-asyncio scikit-learn pandas numpy python-multipart requests
+Pre-configured for Google Colab with Static Ngrok Domain:
+Domain: doctrine-wages-hubcap.ngrok-free.dev
+Port:   8000
 """
 
 import os
 import io
 import sys
 import logging
-import argparse
 from typing import Optional, List, Dict, Any
 
 import numpy as np
@@ -32,7 +23,7 @@ import nest_asyncio
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, Form, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pyngrok import ngrok, conf
+from pyngrok import ngrok
 
 # Configure logging
 logging.basicConfig(
@@ -42,16 +33,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger("colab-worker")
 
-# ---------------------------------------------------------
-# FastAPI App Initialization
-# ---------------------------------------------------------
+# User Credentials
+NGROK_AUTHTOKEN = "3IXML8C4lGPfsP7ehgRNGLoE5OC_4mb2Hu7PwsmABx1EbtvQ1"
+STATIC_DOMAIN = "doctrine-wages-hubcap.ngrok-free.dev"
+PORT = 8000
+
 app = FastAPI(
     title="Google Colab ML Clustering Engine",
     description="Remote compute engine for City-Service Review Profiles & Business Pattern Segmentation",
-    version="1.0.0"
+    version="2.0.0"
 )
 
-# Enable CORS for browser & dashboard access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -62,32 +54,16 @@ app.add_middleware(
 
 
 @app.get("/")
-def root():
-    return {
-        "service": "Google Colab ML Clustering Worker",
-        "status": "online",
-        "worker": "colab-ml-engine",
-        "docs_url": "/docs",
-        "endpoints": ["/health", "/train-clustering"]
-    }
-
-
 @app.get("/health")
 def health():
-    """Health check endpoint to verify worker connectivity from Flask dashboard."""
     return {
         "status": "online",
-        "worker": "colab-ml-engine"
+        "worker": "colab-ml-engine",
+        "domain": STATIC_DOMAIN
     }
 
 
 def _detect_and_process_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, str]:
-    """
-    Defensively detect schema:
-    - Case A: Raw Reviews (has gmap_id and rating) -> aggregates to business level
-    - Case B: Aggregated/Tabular Data -> extracts numeric features
-    Returns: (features_df, id_series, schema_case)
-    """
     col_map = {str(c).strip().lower(): c for c in df.columns}
     is_case_a = ("gmap_id" in col_map) and ("rating" in col_map)
 
@@ -107,11 +83,7 @@ def _detect_and_process_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Se
 
         text_candidates = ["text", "review_text", "review", "comment", "caption", "body", "content"]
         text_col = next((col_map[c] for c in text_candidates if c in col_map), None)
-
-        if text_col is not None:
-            df_valid["_review_length"] = df_valid[text_col].fillna("").astype(str).str.len()
-        else:
-            df_valid["_review_length"] = 0.0
+        df_valid["_review_length"] = df_valid[text_col].fillna("").astype(str).str.len() if text_col else 0.0
 
         grouped = df_valid.groupby(gmap_col)
         mean_rating = grouped[rating_col].mean().rename("mean_rating")
@@ -139,7 +111,7 @@ def _detect_and_process_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Se
         if numeric_df.shape[1] < 2:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Dataset must have at least 2 numeric feature columns for clustering. Found only {numeric_df.shape[1]} numeric column(s)."
+                detail=f"Dataset must have at least 2 numeric feature columns. Found only {numeric_df.shape[1]}."
             )
 
         features = numeric_df.fillna(numeric_df.median(numeric_only=True)).dropna(axis=1)
@@ -158,21 +130,7 @@ async def train_clustering(
     k: Optional[int] = Form(None),
     k_query: Optional[int] = Query(None, alias="k")
 ):
-    """
-    Main clustering training endpoint:
-    - Parses CSV/JSON uploaded dataset
-    - Runs defensive schema detection (Case A vs Case B)
-    - Standardizes features using StandardScaler
-    - Executes KMeans(n_clusters=k)
-    - Computes Silhouette Score, Davies-Bouldin Index, Inertia, PCA 2D coordinates & explained variance
-    """
-    resolved_k = 4
-    if k is not None:
-        resolved_k = k
-    elif k_query is not None:
-        resolved_k = k_query
-
-    resolved_k = max(2, min(10, resolved_k))
+    resolved_k = max(2, min(10, k or k_query or 4))
 
     try:
         contents = await file.read()
@@ -189,16 +147,10 @@ async def train_clustering(
                 df = pd.read_csv(io.BytesIO(contents), sep=None, engine="python")
     except Exception as e:
         logger.error(f"Failed to parse uploaded dataset: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Could not parse uploaded file: {str(e)}"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Could not parse uploaded file: {str(e)}")
 
     if df.empty or len(df) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The uploaded dataset is empty."
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The uploaded dataset is empty.")
 
     features_df, id_series, schema_case = _detect_and_process_dataframe(df)
     n_samples = len(features_df)
@@ -211,19 +163,16 @@ async def train_clustering(
 
     logger.info(f"Processing {n_samples} items with {features_df.shape[1]} features under '{schema_case}', k={resolved_k}.")
 
-    # 1. Standardisation
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(features_df.values)
 
-    # 2. Partition Clustering (KMeans)
     kmeans = KMeans(n_clusters=resolved_k, random_state=42, n_init="auto")
     labels = kmeans.fit_predict(X_scaled)
 
-    # 3. Evaluation Metrics
     if len(np.unique(labels)) > 1 and n_samples > resolved_k:
         try:
             sil_score = float(silhouette_score(X_scaled, labels))
-        except Exception as e:
+        except Exception:
             sil_score = 0.0
     else:
         sil_score = 0.0
@@ -235,12 +184,10 @@ async def train_clustering(
 
     inertia_val = float(kmeans.inertia_)
 
-    # 4. Dimensionality Reduction (PCA 2D)
     pca = PCA(n_components=2, random_state=42)
     pca_coords = pca.fit_transform(X_scaled)
     explained_var = [float(round(v, 4)) for v in pca.explained_variance_ratio_]
 
-    # 5. Cluster Profiles
     features_with_cluster = features_df.copy()
     features_with_cluster["cluster"] = labels
 
@@ -256,31 +203,26 @@ async def train_clustering(
             "percentage": float(c_pct)
         }
         for col in features_df.columns:
-            mean_val = float(c_df[col].mean()) if c_size > 0 else 0.0
-            profile_dict[col] = round(mean_val, 4)
+            profile_dict[col] = round(float(c_df[col].mean()) if c_size > 0 else 0.0, 4)
         profiles.append(profile_dict)
 
-    # 6. Scatter Points (max 5000)
     MAX_SCATTER_POINTS = 5000
     sample_indices = np.linspace(0, n_samples - 1, MAX_SCATTER_POINTS, dtype=int) if n_samples > MAX_SCATTER_POINTS else range(n_samples)
-
     id_list = id_series.tolist()
-    scatter_points = []
-    for idx in sample_indices:
-        scatter_points.append({
-            "id": str(id_list[idx]),
-            "pca_x": float(round(pca_coords[idx, 0], 4)),
-            "pca_y": float(round(pca_coords[idx, 1], 4)),
-            "cluster": int(labels[idx])
-        })
 
-    # Centroids
-    centroids_scaled = kmeans.cluster_centers_
-    centroids_pca = pca.transform(centroids_scaled)
-    centroid_points = [
-        {"cluster": int(c_id), "pca_x": float(round(centroids_pca[c_id, 0], 4)), "pca_y": float(round(centroids_pca[c_id, 1], 4))}
-        for c_id in range(resolved_k)
-    ]
+    scatter_points = [{
+        "id": str(id_list[idx]),
+        "pca_x": float(round(pca_coords[idx, 0], 4)),
+        "pca_y": float(round(pca_coords[idx, 1], 4)),
+        "cluster": int(labels[idx])
+    } for idx in sample_indices]
+
+    centroids_pca = pca.transform(kmeans.cluster_centers_)
+    centroids = [{
+        "cluster": int(c_id),
+        "pca_x": float(round(centroids_pca[c_id, 0], 4)),
+        "pca_y": float(round(centroids_pca[c_id, 1], 4))
+    } for c_id in range(resolved_k)]
 
     return {
         "status": "success",
@@ -296,90 +238,37 @@ async def train_clustering(
         },
         "profiles": profiles,
         "scatter_points": scatter_points,
-        "centroids": centroid_points
+        "centroids": centroids
     }
 
 
-# ---------------------------------------------------------
-# Pyngrok Tunnel Setup & Server Runner
-# ---------------------------------------------------------
-DEFAULT_NGROK_DOMAIN = "doctrine-wages-hubcap.ngrok-free.dev"
-DEFAULT_PORT = 8000
-
-
-def start_server(
-    ngrok_token: Optional[str] = None,
-    domain: Optional[str] = DEFAULT_NGROK_DOMAIN,
-    port: int = DEFAULT_PORT,
-    run_ngrok: bool = True
-):
-    """
-    Configures Ngrok tunnel and starts Uvicorn server.
-    Applies nest_asyncio to support running seamlessly inside Google Colab Jupyter runtimes.
-    """
+def start_server(token: str = NGROK_AUTHTOKEN, domain: str = STATIC_DOMAIN, port: int = PORT):
     nest_asyncio.apply()
+    ngrok.set_auth_token(token)
 
-    public_url = None
-    if run_ngrok:
-        token = ngrok_token or os.environ.get("NGROK_AUTHTOKEN")
-        if token and token != "<YOUR_NGROK_AUTHTOKEN>":
-            logger.info("Setting ngrok authtoken...")
-            ngrok.set_auth_token(token)
-        else:
-            logger.warning("No custom NGROK_AUTHTOKEN provided. An authtoken is recommended for ngrok connections.")
+    tunnel = None
+    try:
+        tunnel = ngrok.connect(addr=port, domain=domain)
+    except Exception as e:
+        logger.warning(f"Static domain '{domain}' connect error: {e}. Trying fallback...")
+        try:
+            tunnel = ngrok.connect(addr=port, hostname=domain)
+        except Exception:
+            tunnel = ngrok.connect(addr=port)
 
-        # Try binding with static domain first, fallback to dynamic tunnel
-        tunnel = None
-        if domain and domain.strip():
-            target_domain = domain.strip()
-            try:
-                logger.info(f"Attempting to bind static ngrok domain: '{target_domain}'...")
-                try:
-                    tunnel = ngrok.connect(addr=port, domain=target_domain)
-                except Exception:
-                    tunnel = ngrok.connect(addr=port, hostname=target_domain)
-                logger.info(f"Successfully bound to static domain: {target_domain}")
-            except Exception as e_domain:
-                logger.warning(f"Static domain '{target_domain}' failed: {e_domain}.")
-                logger.info("Falling back to auto-generated free ngrok tunnel...")
+    public_url = tunnel.public_url.replace("http://", "https://")
+    print("\n" + "=" * 70)
+    print("🚀 GOOGLE COLAB ML TRAINING ENGINE IS LIVE!")
+    print("=" * 70)
+    print(f"👉 STATIC PUBLIC URL:  {public_url}")
+    print(f"👉 HEALTH PROBE URL:   {public_url}/health")
+    print(f"👉 SWAGGER API DOCS:   {public_url}/docs")
+    print("=" * 70)
+    print("✅ Your Render Web Dashboard is pre-configured for this domain.")
+    print("=" * 70 + "\n")
 
-        if tunnel is None:
-            try:
-                tunnel = ngrok.connect(addr=port)
-            except Exception as e:
-                logger.error(f"Failed to open ngrok tunnel: {e}")
-
-        if tunnel:
-            public_url = tunnel.public_url
-            # Force https
-            if public_url.startswith("http://"):
-                public_url = public_url.replace("http://", "https://")
-
-            print("\n" + "=" * 70)
-            print("🚀 GOOGLE COLAB ML TRAINING ENGINE IS ONLINE!")
-            print("=" * 70)
-            print(f"👉 PUBLIC URL TO ENTER IN RENDER DASHBOARD:")
-            print(f"   {public_url}")
-            print(f"👉 HEALTH PROBE: {public_url}/health")
-            print(f"👉 INTERACTIVE SWAGGER DOCS: {public_url}/docs")
-            print("=" * 70 + "\n")
-
-    logger.info(f"Starting Uvicorn server on http://0.0.0.0:{port} ...")
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Google Colab ML Worker for Review Clustering")
-    parser.add_argument("--token", type=str, default=None, help="Ngrok Authtoken")
-    parser.add_argument("--domain", type=str, default=DEFAULT_NGROK_DOMAIN, help="Ngrok static domain")
-    parser.add_argument("--port", type=int, default=DEFAULT_PORT, help="Local port for Uvicorn")
-    parser.add_argument("--no-ngrok", action="store_true", help="Run local server without starting ngrok")
-
-    args = parser.parse_args()
-
-    start_server(
-        ngrok_token=args.token,
-        domain=args.domain,
-        port=args.port,
-        run_ngrok=not args.no_ngrok
-    )
+    start_server()
