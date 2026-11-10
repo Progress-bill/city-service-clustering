@@ -13,11 +13,11 @@ from flask import Flask, render_template, request, jsonify, send_file
 
 app = Flask(__name__)
 
-# Hugging Face Spaces ML Worker persistent HTTPS URL
-HF_WORKER_URL = os.environ.get(
-    "HF_WORKER_URL",
-    "https://progressmurau-city-business-clustering.static.hf.space"
-).rstrip("/")
+# Hugging Face Spaces ML Worker persistent HTTPS URL (Docker container endpoint)
+DEFAULT_HF_URL = "https://progressmurau-city-business-clustering.hf.space"
+HF_WORKER_URL = os.environ.get("HF_WORKER_URL", DEFAULT_HF_URL).rstrip("/")
+if ".static.hf.space" in HF_WORKER_URL:
+    HF_WORKER_URL = HF_WORKER_URL.replace(".static.hf.space", ".hf.space")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SAMPLE_REVIEWS_PATH = os.path.join(BASE_DIR, "sample_data", "sample_reviews.csv")
@@ -25,10 +25,14 @@ SAMPLE_AGG_PATH = os.path.join(BASE_DIR, "sample_data", "sample_aggregated.csv")
 
 
 def _get_worker_url():
-    """Retrieve worker URL from request header/param or environment default."""
+    """Retrieve worker URL from request header/param or environment default, auto-normalizing."""
     custom_url = request.headers.get("X-Worker-Url") or request.form.get("worker_url") or request.args.get("worker_url")
     if custom_url and custom_url.strip():
-        return custom_url.strip().rstrip("/")
+        url = custom_url.strip().rstrip("/")
+        # Auto-correct common .static.hf.space typo to containerized .hf.space domain
+        if ".static.hf.space" in url:
+            url = url.replace(".static.hf.space", ".hf.space")
+        return url
     return HF_WORKER_URL
 
 
@@ -54,45 +58,55 @@ def engine_settings():
 @app.route("/api/status", methods=["GET"])
 def check_worker_status():
     """
-    Ping Hugging Face Spaces ML worker /health endpoint and measure round-trip latency.
+    Ping Hugging Face Spaces ML worker /health (or root /) and measure round-trip latency.
     """
     worker_url = _get_worker_url()
-    health_endpoint = f"{worker_url}/health"
     start_time = time.time()
+    headers = {
+        "User-Agent": "Render-Dashboard-Client/2.0"
+    }
 
-    try:
-        headers = {
-            "User-Agent": "Render-Dashboard-Client/2.0"
-        }
-        res = requests.get(health_endpoint, headers=headers, timeout=8.0)
-        latency = round((time.time() - start_time) * 1000, 1)
+    # Defensive probing: try /health first, fallback to /
+    probes = [f"{worker_url}/health", f"{worker_url}/"]
+    last_res = None
+    last_err = None
 
-        if res.status_code == 200:
-            data = res.json()
-            return jsonify({
-                "status": "online",
-                "worker": data.get("worker", "hf-spaces-ml-engine"),
-                "worker_url": worker_url,
-                "latency_ms": latency
-            })
-        else:
-            return jsonify({
-                "status": "offline",
-                "worker_url": worker_url,
-                "error": f"HTTP {res.status_code}: {res.text[:120]}"
-            }), 502
-    except requests.exceptions.Timeout:
+    for endpoint in probes:
+        try:
+            res = requests.get(endpoint, headers=headers, timeout=8.0)
+            latency = round((time.time() - start_time) * 1000, 1)
+
+            if res.status_code == 200:
+                try:
+                    data = res.json()
+                except Exception:
+                    data = {}
+                return jsonify({
+                    "status": "online",
+                    "worker": data.get("worker") or data.get("engine") or "hf-spaces-ml-engine",
+                    "worker_url": worker_url,
+                    "endpoint_reached": endpoint,
+                    "latency_ms": latency
+                })
+            else:
+                last_res = res
+        except requests.exceptions.Timeout:
+            last_err = "Connection timed out. The Hugging Face Space may be waking up from sleep or building."
+        except requests.exceptions.RequestException as e:
+            last_err = str(e)
+
+    if last_res is not None:
         return jsonify({
             "status": "offline",
             "worker_url": worker_url,
-            "error": "Connection timed out (Hugging Face Space may be waking up from sleep)"
-        }), 504
-    except requests.exceptions.RequestException as e:
-        return jsonify({
-            "status": "offline",
-            "worker_url": worker_url,
-            "error": str(e)
+            "error": f"HTTP {last_res.status_code}: {last_res.text[:140]}"
         }), 502
+    else:
+        return jsonify({
+            "status": "offline",
+            "worker_url": worker_url,
+            "error": last_err or "Worker unreachable"
+        }), 504
 
 
 @app.route("/api/train", methods=["POST"])

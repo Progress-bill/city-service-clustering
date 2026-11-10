@@ -91,7 +91,7 @@
             Active Compute Engine URL:
           </label>
           <div class="flex flex-col sm:flex-row items-center gap-3">
-            <input type="text" id="worker-url-input" value="{{ default_worker_url }}" placeholder="https://progressmurau-city-business-clustering.static.hf.space" class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <input type="text" id="worker-url-input" value="{{ default_worker_url }}" placeholder="https://progressmurau-city-business-clustering.hf.space" class="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
             <button id="btn-ping" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center justify-center space-x-2 whitespace-nowrap">
               <i class="fa-solid fa-bolt-lightning text-amber-400"></i>
               <span>Ping Engine</span>
@@ -189,7 +189,11 @@
     const diagLatency = document.getElementById('diag-latency');
 
     // Initialize from localStorage
-    const saved = localStorage.getItem('hf_worker_url') || localStorage.getItem('colab_worker_url');
+    let saved = localStorage.getItem('hf_worker_url') || localStorage.getItem('colab_worker_url');
+    if (saved && saved.includes('.static.hf.space')) {
+      saved = saved.replace('.static.hf.space', '.hf.space');
+      localStorage.setItem('hf_worker_url', saved);
+    }
     if (saved) {
       inputUrl.value = saved;
     }
@@ -276,7 +280,7 @@
     });
 
     presetHf.addEventListener('click', () => {
-      inputUrl.value = 'https://progressmurau-city-business-clustering.static.hf.space';
+      inputUrl.value = 'https://progressmurau-city-business-clustering.hf.space';
       pingWorker();
     });
 

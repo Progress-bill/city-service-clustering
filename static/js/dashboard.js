@@ -139,7 +139,7 @@ function initUIListeners() {
 
   if (modalPresetHf && modalInput) {
     modalPresetHf.addEventListener('click', () => {
-      modalInput.value = 'https://progressmurau-city-business-clustering.static.hf.space';
+      modalInput.value = 'https://progressmurau-city-business-clustering.hf.space';
     });
   }
 
@@ -189,7 +189,7 @@ function initUIListeners() {
     btnResetWorkerUrl.addEventListener('click', () => {
       localStorage.removeItem('hf_worker_url');
       localStorage.removeItem('colab_worker_url');
-      const defUrl = 'https://progressmurau-city-business-clustering.static.hf.space';
+      const defUrl = 'https://progressmurau-city-business-clustering.hf.space';
       inputWorkerUrl.value = defUrl;
       if (modalInput) modalInput.value = defUrl;
       checkWorkerHealth();
@@ -197,7 +197,11 @@ function initUIListeners() {
   }
 
   // Load saved worker URL if present
-  const savedUrl = localStorage.getItem('hf_worker_url') || localStorage.getItem('colab_worker_url');
+  let savedUrl = localStorage.getItem('hf_worker_url') || localStorage.getItem('colab_worker_url');
+  if (savedUrl && savedUrl.includes('.static.hf.space')) {
+    savedUrl = savedUrl.replace('.static.hf.space', '.hf.space');
+    localStorage.setItem('hf_worker_url', savedUrl);
+  }
   if (savedUrl) {
     inputWorkerUrl.value = savedUrl;
     if (modalInput) modalInput.value = savedUrl;
@@ -271,7 +275,7 @@ function handleFileSelected() {
 // Health Check & Worker Status
 // -------------------------------------------------------------
 async function checkWorkerHealth() {
-  const currentWorkerUrl = (inputWorkerUrl ? inputWorkerUrl.value.trim() : '') || 'https://progressmurau-city-business-clustering.static.hf.space';
+  const currentWorkerUrl = (inputWorkerUrl ? inputWorkerUrl.value.trim() : '') || 'https://progressmurau-city-business-clustering.hf.space';
   if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
   if (statusText) statusText.textContent = 'Pinging ML Engine...';
   if (latencyTag) latencyTag.classList.add('hidden');
