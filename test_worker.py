@@ -24,7 +24,7 @@ def test_train_clustering_case_a():
     data = response.json()
     assert data["status"] == "success"
     assert data["k_clusters"] == 4
-    assert data["sample_size"] == 100  # 100 businesses
+    assert data["sample_size"] == 100
     assert "metrics" in data
     assert "silhouette_score" in data["metrics"]
     assert "davies_bouldin_index" in data["metrics"]
@@ -54,8 +54,29 @@ def test_train_clustering_case_b():
     assert len(data["profiles"]) == 3
     print("\nCase B Test Passed successfully! Schema:", data["schema_detected"])
 
+def test_train_clustering_json_lines():
+    import io
+    sample_jsonl = (
+        b'{"name": "Biz 1", "gmap_id": "0x1", "avg_rating": 4.5, "num_of_reviews": 20, "latitude": 43.5, "longitude": -96.7}\n'
+        b'{"name": "Biz 2", "gmap_id": "0x2", "avg_rating": 3.8, "num_of_reviews": 5, "latitude": 44.1, "longitude": -97.2}\n'
+        b'{"name": "Biz 3", "gmap_id": "0x3", "avg_rating": 4.9, "num_of_reviews": 150, "latitude": 43.8, "longitude": -96.9}\n'
+    )
+    response = client.post(
+        "/train-clustering",
+        files={"file": ("meta-South_Dakota.json", io.BytesIO(sample_jsonl), "application/json")},
+        data={"k": 2}
+    )
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["status"] == "success"
+    assert data["k_clusters"] == 2
+    assert data["sample_size"] == 3
+    assert "metrics" in data
+    print("\nJSON Lines (meta-South_Dakota.json) Test Passed in colab_worker! Schema:", data["schema_detected"])
+
 if __name__ == "__main__":
     test_health_check()
     test_train_clustering_case_a()
     test_train_clustering_case_b()
+    test_train_clustering_json_lines()
     print("\nAll Colab Worker ML endpoints verified successfully!")

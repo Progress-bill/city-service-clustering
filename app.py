@@ -8,6 +8,7 @@ Interacts with the Google Colab ML Training Engine via Ngrok tunnel
 
 import os
 import io
+import json
 import time
 import logging
 import requests
@@ -41,18 +42,64 @@ def _get_worker_url():
     return COLAB_WORKER_URL
 
 
+def parse_dataset_bytes(file_bytes: bytes, filename: str = "") -> pd.DataFrame:
+    """
+    Robust multi-format dataset parser supporting:
+    - JSON Lines (.json, .jsonl - newline delimited records like meta-South_Dakota.json)
+    - Standard JSON (.json - array or records dict)
+    - Parquet (.parquet)
+    - Delimited text (.csv, .tsv, etc.)
+    """
+    fname = (filename or "").lower()
+    if fname.endswith((".json", ".jsonl")):
+        try:
+            return pd.read_json(io.BytesIO(file_bytes), lines=True)
+        except Exception:
+            pass
+        try:
+            return pd.read_json(io.BytesIO(file_bytes))
+        except Exception:
+            pass
+        try:
+            text = file_bytes.decode("utf-8", errors="ignore")
+            records = [json.loads(line) for line in text.splitlines() if line.strip()]
+            if records:
+                return pd.DataFrame(records)
+        except Exception as e:
+            raise ValueError(f"Could not parse JSON dataset: {e}")
+        raise ValueError("JSON dataset contains no valid records.")
+    elif fname.endswith(".parquet"):
+        return pd.read_parquet(io.BytesIO(file_bytes))
+    else:
+        try:
+            return pd.read_csv(io.BytesIO(file_bytes))
+        except Exception:
+            try:
+                return pd.read_csv(io.BytesIO(file_bytes), sep=None, engine="python")
+            except Exception:
+                try:
+                    return pd.read_json(io.BytesIO(file_bytes), lines=True)
+                except Exception:
+                    return pd.read_json(io.BytesIO(file_bytes))
+
+
 def _inprocess_cluster(df: pd.DataFrame, k: int = 4) -> dict:
     """
     High-performance in-process fallback clustering engine:
     Guarantees zero-downtime execution even when Google Colab runtime is sleeping.
     """
     col_map = {str(c).strip().lower(): c for c in df.columns}
+
+    # Coerce known numeric candidate fields in case they were parsed as objects/strings
+    for c in ["avg_rating", "rating", "mean_rating", "num_of_reviews", "review_count", "user_ratings_total", "price_level", "latitude", "longitude"]:
+        if c in col_map and col_map[c] in df.columns:
+            df[col_map[c]] = pd.to_numeric(df[col_map[c]], errors="coerce")
+
     is_case_a = ("gmap_id" in col_map) and ("rating" in col_map)
 
     if is_case_a:
         gmap_col = col_map["gmap_id"]
         rating_col = col_map["rating"]
-        df[rating_col] = pd.to_numeric(df[rating_col], errors="coerce")
         df_valid = df.dropna(subset=[gmap_col, rating_col]).copy()
 
         text_candidates = ["text", "review_text", "review", "comment", "caption", "body", "content"]
@@ -79,7 +126,13 @@ def _inprocess_cluster(df: pd.DataFrame, k: int = 4) -> dict:
             biz_ids = pd.Series([f"item_{i+1}" for i in range(len(df))], index=df.index)
             numeric_df = df.select_dtypes(include=[np.number])
 
+        # If review count is present, add log_review_count
+        count_col = next((col_map[c] for c in ["num_of_reviews", "review_count", "user_ratings_total"] if c in col_map and c in numeric_df.columns), None)
+        if count_col and "log_review_count" not in numeric_df.columns:
+            numeric_df["log_review_count"] = np.log1p(numeric_df[count_col].clip(lower=0))
+
         features_df = numeric_df.fillna(numeric_df.median(numeric_only=True)).dropna(axis=1)
+        biz_ids = biz_ids.loc[features_df.index]
         schema_case = "Case B: Tabular Numeric Features"
 
     n_samples = len(features_df)
@@ -127,14 +180,14 @@ def _inprocess_cluster(df: pd.DataFrame, k: int = 4) -> dict:
         profiles.append(p_dict)
 
     id_list = biz_ids.tolist()
-    scatter_points = []
-    for idx in range(min(n_samples, 5000)):
-        scatter_points.append({
-            "id": str(id_list[idx]),
-            "pca_x": float(round(pca_coords[idx, 0], 4)),
-            "pca_y": float(round(pca_coords[idx, 1], 4)),
-            "cluster": int(labels[idx])
-        })
+    MAX_SCATTER = 5000
+    sample_indices = np.linspace(0, n_samples - 1, MAX_SCATTER, dtype=int) if n_samples > MAX_SCATTER else range(n_samples)
+    scatter_points = [{
+        "id": str(id_list[idx]),
+        "pca_x": float(round(pca_coords[idx, 0], 4)),
+        "pca_y": float(round(pca_coords[idx, 1], 4)),
+        "cluster": int(labels[idx])
+    } for idx in sample_indices]
 
     centroids_pca = pca.transform(kmeans.cluster_centers_)
     centroids = [{"cluster": int(c), "pca_x": float(round(centroids_pca[c, 0], 4)), "pca_y": float(round(centroids_pca[c, 1], 4))} for c in range(k_resolved)]
@@ -257,25 +310,25 @@ def train_proxy():
         "ngrok-skip-browser-warning": "true"
     }
     try:
-        files = {"file": (filename, file_bytes, "text/csv")}
+        files = {"file": (filename, file_bytes, "application/octet-stream")}
         data = {"k": k_int}
-        res = requests.post(train_endpoint, files=files, data=data, headers=headers, timeout=12.0)
+        logger.info(f"Forwarding training request to Colab engine: {train_endpoint} (file: {filename}, size: {len(file_bytes)} bytes)")
+        res = requests.post(train_endpoint, files=files, data=data, headers=headers, timeout=180.0)
         if res.status_code == 200:
-            return jsonify(res.json())
+            logger.info("Colab ML worker successfully returned training results.")
+            result_json = res.json()
+            result_json["engine_used"] = "Google Colab GPU/CPU Engine"
+            return jsonify(result_json)
+        else:
+            logger.warning(f"Colab worker returned HTTP {res.status_code}: {res.text[:300]}. Executing zero-downtime fallback.")
     except Exception as e:
-        logger.warning(f"Colab worker request failed: {e}. Executing in-process fallback.")
+        logger.warning(f"Colab worker request failed ({e}). Executing zero-downtime fallback.")
 
     # Seamless Fallback Execution
     try:
-        if filename.endswith(".json"):
-            df = pd.read_json(io.BytesIO(file_bytes))
-        else:
-            try:
-                df = pd.read_csv(io.BytesIO(file_bytes))
-            except Exception:
-                df = pd.read_csv(io.BytesIO(file_bytes), sep=None, engine="python")
-
+        df = parse_dataset_bytes(file_bytes, filename)
         results = _inprocess_cluster(df, k=k_int)
+        results["engine_used"] = "Integrated Fallback Engine (Local)"
         return jsonify(results)
     except Exception as e:
         logger.error(f"Clustering error: {e}")

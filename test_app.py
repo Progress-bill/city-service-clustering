@@ -45,6 +45,33 @@ def test_flask_routes():
     assert len(train_data["scatter_points"]) == 100
     print("Test 5 Passed: POST /api/train executed clustering pipeline successfully!")
 
+    # 6. Test POST /api/train with uploaded JSON Lines file (e.g. meta-South_Dakota.json format)
+    import io
+    jsonl_content = (
+        b'{"name": "Bakery A", "gmap_id": "0x1", "avg_rating": 4.6, "num_of_reviews": 45, "latitude": 43.54, "longitude": -96.73}\n'
+        b'{"name": "Auto B", "gmap_id": "0x2", "avg_rating": 3.8, "num_of_reviews": 12, "latitude": 43.51, "longitude": -96.71}\n'
+        b'{"name": "Cafe C", "gmap_id": "0x3", "avg_rating": 4.9, "num_of_reviews": 210, "latitude": 43.58, "longitude": -96.75}\n'
+        b'{"name": "Clinic D", "gmap_id": "0x4", "avg_rating": 4.1, "num_of_reviews": 34, "latitude": 43.52, "longitude": -96.69}\n'
+    )
+    res_upload = client.post(
+        "/api/train",
+        data={
+            "k": "2",
+            "use_sample": "false",
+            "file": (io.BytesIO(jsonl_content), "meta-South_Dakota.json")
+        },
+        content_type="multipart/form-data"
+    )
+    assert res_upload.status_code == 200, f"Expected 200 but got {res_upload.status_code}: {res_upload.data}"
+    upload_data = res_upload.get_json()
+    assert upload_data["status"] == "success"
+    assert upload_data["k_clusters"] == 2
+    assert upload_data["sample_size"] == 4
+    assert "metrics" in upload_data
+    assert len(upload_data["scatter_points"]) == 4
+    assert len(upload_data["centroids"]) == 2
+    print("Test 6 Passed: Uploaded JSON Lines (meta-South_Dakota.json format) clustered successfully!")
+
     print("\nAll Flask Web App route and clustering tests passed successfully!")
 
 if __name__ == "__main__":

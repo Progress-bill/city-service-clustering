@@ -8,6 +8,7 @@ Port:   8000
 
 import os
 import io
+import json
 import sys
 import logging
 from typing import Optional, List, Dict, Any
@@ -63,8 +64,55 @@ def health():
     }
 
 
+def parse_dataset_bytes(file_bytes: bytes, filename: str = "") -> pd.DataFrame:
+    """
+    Robust multi-format dataset parser supporting:
+    - JSON Lines (.json, .jsonl - newline delimited records like meta-South_Dakota.json)
+    - Standard JSON (.json - array or records dict)
+    - Parquet (.parquet)
+    - Delimited text (.csv, .tsv, etc.)
+    """
+    fname = (filename or "").lower()
+    if fname.endswith((".json", ".jsonl")):
+        try:
+            return pd.read_json(io.BytesIO(file_bytes), lines=True)
+        except Exception:
+            pass
+        try:
+            return pd.read_json(io.BytesIO(file_bytes))
+        except Exception:
+            pass
+        try:
+            text = file_bytes.decode("utf-8", errors="ignore")
+            records = [json.loads(line) for line in text.splitlines() if line.strip()]
+            if records:
+                return pd.DataFrame(records)
+        except Exception as e:
+            raise ValueError(f"Could not parse JSON dataset: {e}")
+        raise ValueError("JSON dataset contains no valid records.")
+    elif fname.endswith(".parquet"):
+        return pd.read_parquet(io.BytesIO(file_bytes))
+    else:
+        try:
+            return pd.read_csv(io.BytesIO(file_bytes))
+        except Exception:
+            try:
+                return pd.read_csv(io.BytesIO(file_bytes), sep=None, engine="python")
+            except Exception:
+                try:
+                    return pd.read_json(io.BytesIO(file_bytes), lines=True)
+                except Exception:
+                    return pd.read_json(io.BytesIO(file_bytes))
+
+
 def _detect_and_process_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, str]:
     col_map = {str(c).strip().lower(): c for c in df.columns}
+
+    # Coerce known numeric candidate fields in case they were parsed as objects/strings
+    for c in ["avg_rating", "rating", "mean_rating", "num_of_reviews", "review_count", "user_ratings_total", "price_level", "latitude", "longitude"]:
+        if c in col_map and col_map[c] in df.columns:
+            df[col_map[c]] = pd.to_numeric(df[col_map[c]], errors="coerce")
+
     is_case_a = ("gmap_id" in col_map) and ("rating" in col_map)
 
     if is_case_a:
@@ -108,6 +156,11 @@ def _detect_and_process_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Se
             biz_ids = pd.Series([f"item_{i+1}" for i in range(len(df))], index=df.index)
             numeric_df = df.select_dtypes(include=[np.number])
 
+        # If review count is present, add log_review_count
+        count_col = next((col_map[c] for c in ["num_of_reviews", "review_count", "user_ratings_total"] if c in col_map and c in numeric_df.columns), None)
+        if count_col and "log_review_count" not in numeric_df.columns:
+            numeric_df["log_review_count"] = np.log1p(numeric_df[count_col].clip(lower=0))
+
         if numeric_df.shape[1] < 2:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -134,17 +187,7 @@ async def train_clustering(
 
     try:
         contents = await file.read()
-        filename = (file.filename or "").lower()
-
-        if filename.endswith(".json"):
-            df = pd.read_json(io.BytesIO(contents))
-        elif filename.endswith(".parquet"):
-            df = pd.read_parquet(io.BytesIO(contents))
-        else:
-            try:
-                df = pd.read_csv(io.BytesIO(contents))
-            except Exception:
-                df = pd.read_csv(io.BytesIO(contents), sep=None, engine="python")
+        df = parse_dataset_bytes(contents, file.filename or "")
     except Exception as e:
         logger.error(f"Failed to parse uploaded dataset: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Could not parse uploaded file: {str(e)}")
