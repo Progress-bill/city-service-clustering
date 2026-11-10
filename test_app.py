@@ -29,12 +29,23 @@ def test_flask_routes():
     # 4. Test GET /settings and /engine-settings
     res_set = client.get("/settings")
     assert res_set.status_code == 200
-    assert b"Engine Configuration Settings" in res_set.data
+    assert b"Google Colab Engine Settings" in res_set.data
     res_eng = client.get("/engine-settings")
     assert res_eng.status_code == 200
     print("Test 4 Passed: GET /settings and /engine-settings served settings page.")
 
-    print("\nAll Flask Web App route tests passed successfully!")
+    # 5. Test POST /api/train with sample data (Zero-downtime clustering test)
+    res_train = client.post("/api/train", data={"k": "4", "use_sample": "true", "sample_type": "reviews"})
+    assert res_train.status_code == 200
+    train_data = res_train.get_json()
+    assert train_data["status"] == "success"
+    assert train_data["k_clusters"] == 4
+    assert "metrics" in train_data
+    assert "silhouette_score" in train_data["metrics"]
+    assert len(train_data["scatter_points"]) == 100
+    print("Test 5 Passed: POST /api/train executed clustering pipeline successfully!")
+
+    print("\nAll Flask Web App route and clustering tests passed successfully!")
 
 if __name__ == "__main__":
     test_flask_routes()

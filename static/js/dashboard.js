@@ -139,13 +139,13 @@ function initUIListeners() {
 
   if (modalPresetHf && modalInput) {
     modalPresetHf.addEventListener('click', () => {
-      modalInput.value = 'https://progressmurau-city-business-clustering.hf.space';
+      modalInput.value = 'https://doctrine-wages-hubcap.ngrok-free.dev';
     });
   }
 
   if (modalPresetLocal && modalInput) {
     modalPresetLocal.addEventListener('click', () => {
-      modalInput.value = 'http://localhost:7860';
+      modalInput.value = 'http://localhost:8000';
     });
   }
 
@@ -189,7 +189,7 @@ function initUIListeners() {
     btnResetWorkerUrl.addEventListener('click', () => {
       localStorage.removeItem('hf_worker_url');
       localStorage.removeItem('colab_worker_url');
-      const defUrl = 'https://progressmurau-city-business-clustering.hf.space';
+      const defUrl = 'https://doctrine-wages-hubcap.ngrok-free.dev';
       inputWorkerUrl.value = defUrl;
       if (modalInput) modalInput.value = defUrl;
       checkWorkerHealth();
@@ -275,7 +275,7 @@ function handleFileSelected() {
 // Health Check & Worker Status
 // -------------------------------------------------------------
 async function checkWorkerHealth() {
-  const currentWorkerUrl = (inputWorkerUrl ? inputWorkerUrl.value.trim() : '') || 'https://progressmurau-city-business-clustering.hf.space';
+  const currentWorkerUrl = (inputWorkerUrl ? inputWorkerUrl.value.trim() : '') || 'https://doctrine-wages-hubcap.ngrok-free.dev';
   if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
   if (statusText) statusText.textContent = 'Pinging ML Engine...';
   if (latencyTag) latencyTag.classList.add('hidden');
@@ -296,7 +296,7 @@ async function checkWorkerHealth() {
     if (res.ok && data.status === 'online') {
       if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-lg shadow-emerald-500/50';
       if (statusText) {
-        statusText.textContent = 'HF Spaces ML Engine: Online';
+        statusText.textContent = 'Colab ML Engine: Online';
         statusText.className = 'text-emerald-300 font-semibold text-xs';
       }
       if (data.latency_ms && latencyTag) {
@@ -321,7 +321,7 @@ async function checkWorkerHealth() {
 function markWorkerOffline(errMsg) {
   if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50';
   if (statusText) {
-    statusText.textContent = 'HF ML Engine: Offline';
+    statusText.textContent = 'Colab ML Engine: Offline';
     statusText.className = 'text-rose-400 font-medium text-xs';
   }
   if (latencyTag) latencyTag.classList.add('hidden');
