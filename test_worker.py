@@ -37,6 +37,10 @@ def test_train_clustering_case_a():
     assert "pca_x" in data["scatter_points"][0]
     assert "pca_y" in data["scatter_points"][0]
     assert "cluster" in data["scatter_points"][0]
+    assert "strategic_decisions" in data
+    assert len(data["strategic_decisions"]) == 4
+    assert "market_trends" in data
+    assert "market_health_score" in data["market_trends"]
     print("\nCase A Test Passed successfully! Metrics:", data["metrics"])
 
 def test_train_clustering_case_b():

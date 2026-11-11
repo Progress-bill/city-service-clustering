@@ -43,7 +43,11 @@ def test_flask_routes():
     assert "metrics" in train_data
     assert "silhouette_score" in train_data["metrics"]
     assert len(train_data["scatter_points"]) == 100
-    print("Test 5 Passed: POST /api/train executed clustering pipeline successfully!")
+    assert "strategic_decisions" in train_data
+    assert len(train_data["strategic_decisions"]) == 4
+    assert "market_trends" in train_data
+    assert "market_health_score" in train_data["market_trends"]
+    print("Test 5 Passed: POST /api/train executed clustering pipeline and generated strategic decisions!")
 
     # 6. Test POST /api/train with uploaded JSON Lines file (e.g. meta-South_Dakota.json format)
     import io
@@ -70,7 +74,10 @@ def test_flask_routes():
     assert "metrics" in upload_data
     assert len(upload_data["scatter_points"]) == 4
     assert len(upload_data["centroids"]) == 2
-    print("Test 6 Passed: Uploaded JSON Lines (meta-South_Dakota.json format) clustered successfully!")
+    assert "strategic_decisions" in upload_data
+    assert len(upload_data["strategic_decisions"]) == 2
+    assert "venture_title" in upload_data["strategic_decisions"][0]
+    print("Test 6 Passed: Uploaded JSON Lines (meta-South_Dakota.json format) clustered successfully with venture proposals!")
 
     print("\nAll Flask Web App route and clustering tests passed successfully!")
 

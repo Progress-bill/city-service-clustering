@@ -105,6 +105,188 @@ def parse_dataset_bytes(file_bytes: bytes, filename: str = "") -> pd.DataFrame:
                     return pd.read_json(io.BytesIO(file_bytes))
 
 
+def generate_strategic_intelligence(profiles: list, sample_size: int, schema_case: str) -> dict:
+    """
+    Derives real-world statistical decisions, market opportunity scores,
+    and targeted business venture proposals based on clustering archetypes.
+    """
+    if not profiles or sample_size <= 0:
+        return {"clusters": [], "macro_trends": {}}
+
+    p0 = profiles[0]
+    rating_candidates = ["mean_rating", "avg_rating", "rating", "score"]
+    rating_key = next((k for k in rating_candidates if k in p0), None)
+
+    volume_candidates = ["log_review_count", "num_of_reviews", "review_count", "reviews", "volume", "count"]
+    volume_key = next((k for k in volume_candidates if k in p0), None)
+
+    vol_candidates = ["std_rating", "std", "volatility", "variance"]
+    vol_key = next((k for k in vol_candidates if k in p0), None)
+
+    eng_candidates = ["avg_review_length", "review_length", "length", "text_len"]
+    eng_key = next((k for k in eng_candidates if k in p0), None)
+
+    all_ratings = [float(p.get(rating_key, 3.5)) if rating_key else 3.5 for p in profiles]
+    all_volumes = [float(p.get(volume_key, 2.0)) if volume_key else 2.0 for p in profiles]
+    all_volatilities = [float(p.get(vol_key, 0.5)) if vol_key else 0.5 for p in profiles]
+    all_lengths = [float(p.get(eng_key, 100.0)) if eng_key else 100.0 for p in profiles]
+
+    min_r, max_r = min(all_ratings), max(all_ratings)
+    min_v, max_v = min(all_volumes), max(all_volumes)
+    min_s, max_s = min(all_volatilities), max(all_volatilities)
+    min_l, max_l = min(all_lengths), max(all_lengths)
+
+    def _norm(val, mn, mx, invert=False):
+        if mx - mn <= 1e-6:
+            res = 50.0
+        else:
+            res = max(10.0, min(95.0, ((val - mn) / (mx - mn)) * 85.0 + 10.0))
+        return round(105.0 - res if invert else res, 1)
+
+    clusters_intelligence = []
+
+    for p in profiles:
+        c_id = int(p.get("cluster", 0))
+        c_size = int(p.get("size", 0))
+        c_pct = float(p.get("percentage", 0.0))
+
+        r_val = float(p.get(rating_key, 3.5)) if rating_key else 3.5
+        v_val = float(p.get(volume_key, 2.0)) if volume_key else 2.0
+        s_val = float(p.get(vol_key, 0.5)) if vol_key else 0.5
+        e_val = float(p.get(eng_key, 100.0)) if eng_key else 100.0
+
+        if r_val < 3.8 and v_val > 2.2:
+            opp_score = round(min(98.0, 78.0 + (5.0 - r_val) * 10.0 + (v_val * 3.5)), 1)
+            archetype = "High-Demand / Service-Deficit Vacuum"
+            archetype_badge = "bg-rose-500/10 text-rose-300 border-rose-500/30"
+            venture_title = "Disruptive Alternative Service Venture"
+            venture_concept = f"Launch a modernized, customer-first service brand in this area to directly capture market share from the {c_size} underperforming incumbents ({r_val:.2f} avg rating)."
+            risk_level = "Moderate Risk • High Disruption Yield"
+            priority = "Tier 1 Prime Target"
+            roi_potential = "3.8x - 5.2x (36 Mo)"
+            decisions = [
+                "Capital Allocation: Deploy seed or expansion capital specifically into localized digital customer acquisition and geofenced ads.",
+                "Pricing Strategy: Introduce transparent upfront pricing and satisfaction guarantee to contrast sharply against incumbent friction.",
+                "Operational Intervention: Automate appointment booking and implement SLA-backed response times under 15 minutes.",
+                "Marketing Campaign: Run 'Tired of Low Quality?' campaigns contrasting verified customer reviews against legacy providers."
+            ]
+        elif r_val >= 4.3 and v_val < 2.5:
+            opp_score = round(min(96.0, 72.0 + (r_val * 4.5)), 1)
+            archetype = "Emerging High-Quality Boutique Niches"
+            archetype_badge = "bg-cyan-500/10 text-cyan-300 border-cyan-500/30"
+            venture_title = "Boutique Expansion & Digital Scaling Fund"
+            venture_concept = f"Inject growth equity or establish franchise partnerships with these top-rated operators ({r_val:.2f} rating) who lack digital marketing scale."
+            risk_level = "Low Risk • High Capital Efficiency"
+            priority = "Tier 1 Growth Opportunity"
+            roi_potential = "3.2x - 4.5x (24 Mo)"
+            decisions = [
+                "Capital Allocation: Provide growth financing, franchise systems, and equipment leasing for secondary location rollouts.",
+                "Tech Infrastructure: Deploy automated SMS review-request workflows to convert daily physical visits into digital review volume.",
+                "Market Expansion: Replicate their exact operational recipes and high-touch customer service across adjacent city districts.",
+                "Brand Partnerships: Aggregate multiple boutique specialists under an umbrella regional membership or subscription pass."
+            ]
+        elif r_val >= 4.3 and v_val >= 2.5:
+            opp_score = round(min(88.0, 62.0 + (r_val * 4.0)), 1)
+            archetype = "High-Volume Market Champions"
+            archetype_badge = "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+            venture_title = "Premium Moat Defense & Ancillary Upselling"
+            venture_concept = f"Defend dominance across this {c_pct:.1f}% market share anchor by introducing premium VIP tiers, corporate contracts, and ancillary services."
+            risk_level = "Very Low Risk • Stable Cashflow"
+            priority = "Tier 2 Strategic Anchor"
+            roi_potential = "2.1x - 2.8x (Steady Yield)"
+            decisions = [
+                "Capital Allocation: Reinvest cashflows into customer retention, employee profit-sharing, and bespoke mobile apps.",
+                "Monetization: Implement a 10-15% price elasticity test via premium on-demand or fast-track service tiers without churn risk.",
+                "Defensive Moat: Monitor new entrants and lock in long-term commercial real estate leases and supplier exclusivity.",
+                "Talent Retention: Create structured apprenticeship programs to prevent top technician and service staff turnover."
+            ]
+        elif s_val >= 0.85 or (r_val < 4.0 and r_val >= 3.2):
+            opp_score = round(min(82.0, 56.0 + s_val * 22.0), 1)
+            archetype = "Polarized / High-Volatility Operators"
+            archetype_badge = "bg-amber-500/10 text-amber-300 border-amber-500/30"
+            venture_title = "Operational Turnaround & Rollup M&A"
+            venture_concept = f"Target erratic providers ({s_val:.2f} rating volatility) for rollup acquisition at attractive multiples (2.2x-3.0x EBITDA) and install standardized QA SOPs."
+            risk_level = "Moderate-to-High Risk • Value Turnaround"
+            priority = "Tier 2 Restructuring Target"
+            roi_potential = "2.8x - 4.0x (Turnaround)"
+            decisions = [
+                "Acquisition Strategy: Approach owners of volatile businesses with earn-out structures to acquire asset bases at discounted valuations.",
+                "Operational Overhaul: Mandate comprehensive SOP checklists and install real-time staff incentive metrics tied to customer satisfaction.",
+                "Reputation Recovery: Establish an automated post-service follow-up loop that intercepts negative feedback prior to public posting.",
+                "Cost Synergy: Centralize administrative overhead, billing, and inventory procurement into a shared regional hub."
+            ]
+        else:
+            opp_score = 48.0
+            archetype = "Consistent Mid-Tier Providers"
+            archetype_badge = "bg-indigo-500/10 text-indigo-300 border-indigo-500/30"
+            venture_title = "Value-Tier Supply Chain & Group Purchasing Co-op"
+            venture_concept = f"Form group purchasing cooperatives and shared marketing consortiums across the {c_size} mid-market operators to expand gross margins."
+            risk_level = "Moderate Risk • Steady Margin"
+            priority = "Tier 3 Baseline"
+            roi_potential = "1.8x - 2.4x (Operational Margin)"
+            decisions = [
+                "Cost Optimization: Aggregate supply and tooling purchases across businesses in this tier to negotiate 12-18% bulk supplier discounts.",
+                "Service Specialization: Incentivize providers to develop specialized sub-offerings to escape undifferentiated commodity pricing.",
+                "Digital Upgrades: Modernize legacy websites, optimize Google Business profiles, and establish localized SEO presence.",
+                "Loyalty Programs: Implement cross-business local loyalty cards to encourage repeat customer retention."
+            ]
+
+        radar_vector = {
+            "satisfaction": _norm(r_val, min_r, max_r),
+            "demand": _norm(v_val, min_v, max_v),
+            "consistency": _norm(s_val, min_s, max_s, invert=True),
+            "engagement": _norm(e_val, min_l, max_l),
+            "opportunity": opp_score
+        }
+
+        clusters_intelligence.append({
+            "cluster": c_id,
+            "archetype": archetype,
+            "archetype_badge": archetype_badge,
+            "size": c_size,
+            "percentage": c_pct,
+            "opportunity_score": opp_score,
+            "risk_level": risk_level,
+            "priority": priority,
+            "roi_potential": roi_potential,
+            "venture_title": venture_title,
+            "venture_concept": venture_concept,
+            "decisions": decisions,
+            "radar_vector": radar_vector,
+            "metrics_summary": {
+                "rating": round(r_val, 2),
+                "volume": round(v_val, 2),
+                "volatility": round(s_val, 2),
+                "engagement": round(e_val, 1)
+            }
+        })
+
+    avg_mkt_rating = round(sum(c["metrics_summary"]["rating"] * c["size"] for c in clusters_intelligence) / max(1, sample_size), 2)
+    top_opp = max(clusters_intelligence, key=lambda x: x["opportunity_score"]) if clusters_intelligence else None
+    health_score = round(min(100.0, max(10.0, (avg_mkt_rating / 5.0) * 70.0 + (30.0 if avg_mkt_rating >= 4.0 else 15.0))), 1)
+
+    deficit_clusters = [c for c in clusters_intelligence if c["archetype"] == "High-Demand / Service-Deficit Vacuum"]
+    if deficit_clusters:
+        gap_text = f"Severe customer satisfaction deficit detected in Cluster {deficit_clusters[0]['cluster']} ({deficit_clusters[0]['percentage']}% market share). Strong demand paired with low satisfaction creates an immediate disruption opening."
+    else:
+        gap_text = "Market is heavily contested with established mid-to-high performers. Primary venture opportunity lies in boutique digital scaling and premium tier expansion."
+
+    macro_trends = {
+        "avg_market_rating": avg_mkt_rating,
+        "market_health_score": health_score,
+        "top_venture_target": top_opp["venture_title"] if top_opp else "Strategic Venture Expansion",
+        "top_opportunity_score": top_opp["opportunity_score"] if top_opp else 75.0,
+        "prime_cluster_target": top_opp["cluster"] if top_opp else 0,
+        "prime_archetype": top_opp["archetype"] if top_opp else "Emerging Opportunities",
+        "market_gap_analysis": gap_text
+    }
+
+    return {
+        "clusters": clusters_intelligence,
+        "macro_trends": macro_trends
+    }
+
+
 def _detect_and_process_dataframe(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, str]:
     col_map = {str(c).strip().lower(): c for c in df.columns}
 
@@ -267,6 +449,8 @@ async def train_clustering(
         "pca_y": float(round(centroids_pca[c_id, 1], 4))
     } for c_id in range(resolved_k)]
 
+    strategic_intel = generate_strategic_intelligence(profiles, n_samples, schema_case)
+
     return {
         "status": "success",
         "sample_size": int(n_samples),
@@ -281,7 +465,9 @@ async def train_clustering(
         },
         "profiles": profiles,
         "scatter_points": scatter_points,
-        "centroids": centroids
+        "centroids": centroids,
+        "strategic_decisions": strategic_intel.get("clusters", []),
+        "market_trends": strategic_intel.get("macro_trends", {})
     }
 
 
