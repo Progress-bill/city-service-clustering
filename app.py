@@ -504,6 +504,18 @@ def train_proxy():
             logger.info("Colab ML worker successfully returned training results.")
             result_json = res.json()
             result_json["engine_used"] = "Google Colab GPU/CPU Engine"
+
+            # Defensive fallback enrichment: If remote Colab worker is running an earlier code version
+            # without strategic_decisions, compute decisions dynamically from returned profiles
+            if "strategic_decisions" not in result_json and "profiles" in result_json:
+                intel = generate_strategic_intelligence(
+                    result_json.get("profiles", []),
+                    result_json.get("sample_size", 100),
+                    result_json.get("schema_detected", "Case A")
+                )
+                result_json["strategic_decisions"] = intel.get("clusters", [])
+                result_json["market_trends"] = intel.get("macro_trends", {})
+
             return jsonify(result_json)
         else:
             logger.warning(f"Colab worker returned HTTP {res.status_code}: {res.text[:300]}. Executing zero-downtime fallback.")
