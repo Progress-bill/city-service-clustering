@@ -397,10 +397,23 @@ def _inprocess_cluster(df: pd.DataFrame, k: int = 4) -> dict:
 
 
 @app.route("/")
+@app.route("/clustering")
+@app.route("/pca-reviews")
 def index():
-    """Render main interactive dashboard."""
+    """Render main loading dataset & 2D PCA reviews clustering dashboard."""
     return render_template(
         "index.html",
+        default_worker_url=COLAB_WORKER_URL
+    )
+
+
+@app.route("/analytics")
+@app.route("/market-recommendations")
+@app.route("/market-trends")
+def market_analytics():
+    """Render dedicated Data Analytics & Market Recommendations page."""
+    return render_template(
+        "analytics.html",
         default_worker_url=COLAB_WORKER_URL
     )
 

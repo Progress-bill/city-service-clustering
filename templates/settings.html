@@ -35,25 +35,60 @@
   <!-- Header -->
   <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Page Title -->
       <div class="flex items-center space-x-3">
-        <a href="/" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700 text-xs flex items-center space-x-2">
-          <i class="fa-solid fa-arrow-left"></i>
-          <span>Dashboard</span>
+        <a href="/" class="flex items-center space-x-3 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-indigo-500 to-amber-400 flex items-center justify-center shadow-lg shadow-cyan-500/25 ring-1 ring-white/20 group-hover:scale-105 transition">
+            <i class="fa-solid fa-sliders text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-base font-bold text-white flex items-center space-x-2">
+              <span>Google Colab Engine Settings</span>
+            </h1>
+            <p class="text-[11px] font-medium text-slate-400">Compute Infrastructure &amp; Ngrok Diagnostics</p>
+          </div>
         </a>
-        <div class="h-4 w-px bg-slate-800"></div>
-        <div>
-          <h1 class="text-base font-bold text-white flex items-center space-x-2">
-            <i class="fa-solid fa-sliders text-indigo-400"></i>
-            <span>Google Colab Engine Settings</span>
-          </h1>
-        </div>
       </div>
 
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center space-x-1 bg-slate-950/60 p-1.5 rounded-xl border border-slate-800 text-xs">
+        <a href="/" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-shapes text-indigo-400"></i>
+          <span>Dataset &amp; PCA Reviews</span>
+        </a>
+        <a href="/analytics" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+          <span>Market Analytics &amp; Ventures</span>
+        </a>
+        <a href="/settings" class="px-3 py-1.5 rounded-lg bg-cyan-600/20 text-cyan-300 font-semibold border border-cyan-500/30 flex items-center space-x-1.5 shadow-sm">
+          <i class="fa-solid fa-sliders text-cyan-400"></i>
+          <span>ML Settings</span>
+        </a>
+      </nav>
+
+      <!-- Worker Status Pill -->
       <div id="status-pill" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-xs shadow-inner">
         <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
         <span id="status-text" class="text-slate-300 font-medium">Checking Connection...</span>
         <span id="latency-tag" class="hidden text-[10px] text-slate-400 font-mono"></span>
       </div>
+    </div>
+
+    <!-- Mobile Sub-Navigation -->
+    <div class="md:hidden border-t border-slate-800 bg-slate-900/90 px-4 py-2 flex items-center justify-between text-xs">
+      <a href="/" class="text-slate-400 hover:text-white py-1 flex items-center space-x-1">
+        <i class="fa-solid fa-shapes"></i>
+        <span>PCA Reviews</span>
+      </a>
+      <a href="/analytics" class="text-slate-400 hover:text-white py-1 flex items-center space-x-1">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Market Analytics</span>
+      </a>
+      <a href="/settings" class="text-cyan-400 font-bold py-1 border-b-2 border-cyan-500 flex items-center space-x-1">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Settings</span>
+      </a>
     </div>
   </header>
 

@@ -468,51 +468,32 @@ function renderDashboard(data) {
   detectedSchemaPill.textContent = data.schema_detected || 'Aggregated Dataset';
   chartPlaceholder.classList.add('hidden');
 
-  // Update Market Trends Ribbon
-  const trendsRibbon = document.getElementById('market-trends-ribbon');
-  if (trendsRibbon && data.market_trends) {
-    trendsRibbon.classList.remove('hidden');
-    const mt = data.market_trends;
-    const elHealth = document.getElementById('trend-market-health');
-    const elAvgR = document.getElementById('trend-avg-rating');
-    const elTopOpp = document.getElementById('trend-top-opp-score');
-    const elPrimeTarget = document.getElementById('trend-prime-target-badge');
-    const elVentureName = document.getElementById('trend-top-venture-name');
-    const elArchetype = document.getElementById('trend-top-archetype');
+  // Cache results for dedicated Analytics & Market Recommendations page
+  try {
+    localStorage.setItem('city_service_ml_results', JSON.stringify(data));
+    const activeFileName = (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : (data.schema_detected || 'Processed Dataset');
+    localStorage.setItem('city_service_dataset_name', activeFileName);
+  } catch (e) {
+    console.warn('Could not cache results to localStorage:', e);
+  }
 
-    if (elHealth) elHealth.textContent = `${mt.market_health_score ?? 80}/100`;
-    if (elAvgR) elAvgR.textContent = `${mt.avg_market_rating ?? 4.0} ★`;
-    if (elTopOpp) elTopOpp.textContent = `${mt.top_opportunity_score ?? 90}/100`;
-    if (elPrimeTarget) elPrimeTarget.textContent = `Cluster ${mt.prime_cluster_target ?? 0} Prime Target`;
-    if (elVentureName) {
-      elVentureName.textContent = mt.top_venture_target || 'Venture Expansion';
-      elVentureName.title = mt.top_venture_target || '';
+  // Reveal Analytics CTA Banner
+  const ctaBanner = document.getElementById('analytics-cta-banner');
+  if (ctaBanner) {
+    ctaBanner.classList.remove('hidden');
+    const ctaCount = document.getElementById('cta-cluster-count');
+    if (ctaCount) {
+      ctaCount.textContent = `${data.k_clusters} Archetype Segments Formed`;
     }
-    if (elArchetype) elArchetype.textContent = mt.prime_archetype || 'Strategic Recommendation';
   }
 
-  // Update Market Gap Text & Reveal Strategic Decisions Section
-  const strategicSec = document.getElementById('strategic-decisions-section');
-  if (strategicSec) {
-    strategicSec.classList.remove('hidden');
-  }
-  const elGapText = document.getElementById('market-gap-text');
-  if (elGapText && data.market_trends && data.market_trends.market_gap_analysis) {
-    elGapText.textContent = data.market_trends.market_gap_analysis;
-  }
-
-  // 2. Render Existing Charts
+  // 2. Render PCA Reviews & Profiles Charts
   renderPcaScatterPlot(data);
   renderProfilesChart(data);
   renderDistributionPieChart(data);
 
-  // 3. Populate Archetype Table
+  // 3. Populate Archetype Profile Matrix Table
   populateProfilesTable(data);
-
-  // 4. Render New Market Trends & Business Venture Charts
-  renderMarketMatrixChart(data);
-  renderVentureRadarChart(data);
-  renderStrategicDecisionCards(data, 'all');
 }
 
 // --- 2D PCA Scatter Plot ---

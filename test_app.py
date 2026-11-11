@@ -34,6 +34,15 @@ def test_flask_routes():
     assert res_eng.status_code == 200
     print("Test 4 Passed: GET /settings and /engine-settings served settings page.")
 
+    # 4b. Test GET /analytics and /market-recommendations
+    res_an = client.get("/analytics")
+    assert res_an.status_code == 200
+    assert b"Market Recommendations" in res_an.data
+    assert b"Market Opportunity vs Risk Matrix" in res_an.data
+    res_rec = client.get("/market-recommendations")
+    assert res_rec.status_code == 200
+    print("Test 4b Passed: GET /analytics and /market-recommendations served dedicated analytics page.")
+
     # 5. Test POST /api/train with sample data (Zero-downtime clustering test)
     res_train = client.post("/api/train", data={"k": "4", "use_sample": "true", "sample_type": "reviews"})
     assert res_train.status_code == 200

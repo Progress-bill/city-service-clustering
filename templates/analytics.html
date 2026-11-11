@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Analytics & Market Recommendations | City-Service Review Profiles</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="bg-[#0b0f17] text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Global Navigation -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Page Title -->
+      <div class="flex items-center space-x-3">
+        <a href="/" class="flex items-center space-x-3 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-emerald-500/25 ring-1 ring-white/20 group-hover:scale-105 transition">
+            <i class="fa-solid fa-chart-line text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-emerald-200 bg-clip-text text-transparent">
+              City-Service Review Profiles
+            </h1>
+            <p class="text-[11px] font-medium text-slate-400">Data Analytics &amp; Market Recommendations</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center space-x-1 bg-slate-950/60 p-1.5 rounded-xl border border-slate-800 text-xs">
+        <a href="/" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-shapes text-indigo-400"></i>
+          <span>Dataset &amp; PCA Reviews</span>
+        </a>
+        <a href="/analytics" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 font-semibold border border-emerald-500/30 flex items-center space-x-1.5 shadow-sm">
+          <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+          <span>Market Analytics &amp; Ventures</span>
+        </a>
+        <a href="/settings" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-sliders text-cyan-400"></i>
+          <span>ML Settings</span>
+        </a>
+      </nav>
+
+      <!-- Worker Status Badge -->
+      <div class="flex items-center space-x-3">
+        <div id="worker-status-badge" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/80 text-xs shadow-inner">
+          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="status-text" class="text-slate-300 font-medium">Checking Engine...</span>
+          <span id="latency-tag" class="hidden text-[10px] text-slate-400 font-mono"></span>
+        </div>
+        <a href="/settings" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700 text-xs flex items-center" title="Engine Settings">
+          <i class="fa-solid fa-gear"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Sub-Navigation -->
+  <div class="md:hidden border-b border-slate-800 bg-slate-900/90 px-4 py-2 flex items-center justify-between text-xs">
+    <a href="/" class="text-slate-400 hover:text-white py-1 flex items-center space-x-1">
+      <i class="fa-solid fa-shapes"></i>
+      <span>PCA Reviews</span>
+    </a>
+    <a href="/analytics" class="text-emerald-400 font-bold py-1 border-b-2 border-emerald-500 flex items-center space-x-1">
+      <i class="fa-solid fa-chart-pie"></i>
+      <span>Market Analytics</span>
+    </a>
+    <a href="/settings" class="text-slate-400 hover:text-white py-1 flex items-center space-x-1">
+      <i class="fa-solid fa-sliders"></i>
+      <span>Settings</span>
+    </a>
+  </div>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Page Header Banner -->
+    <div class="rounded-2xl bg-gradient-to-r from-slate-900 via-emerald-950/30 to-slate-900 border border-slate-800 p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1.5">
+        <div class="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold">
+          <i class="fa-solid fa-chess-knight"></i>
+          <span>Strategic Decision Intelligence</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+          Regional Market Trends &amp; Business Venture Recommendations
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
+          Empirical decision intelligence, regional customer satisfaction gaps, and targeted business venture proposals derived from ML clustering segments.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btn-copy-brief" onclick="copyStrategicBrief()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center space-x-2 transition shadow-sm cursor-pointer">
+          <i class="fa-regular fa-copy text-emerald-400"></i>
+          <span id="btn-copy-text">Copy Executive Brief</span>
+        </button>
+        <button id="btn-export-json" onclick="exportStrategicJSON()" class="px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center space-x-2 transition shadow-sm cursor-pointer">
+          <i class="fa-solid fa-file-arrow-down"></i>
+          <span>Export JSON</span>
+        </button>
+        <a href="/" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center space-x-2 transition shadow-lg shadow-indigo-600/30">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Ingestion &amp; PCA</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Active Dataset Context Pill -->
+    <div id="dataset-context-bar" class="flex items-center justify-between flex-wrap gap-2 px-4 py-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+      <div class="flex items-center space-x-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span class="text-slate-400">Analyzed Dataset:</span>
+        <span id="ctx-dataset-name" class="font-mono text-slate-200 font-semibold">Loading...</span>
+        <span class="text-slate-600">&bull;</span>
+        <span id="ctx-cluster-meta" class="font-mono text-slate-400">0 businesses &bull; 0 clusters</span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="btn-reload-sample" onclick="triggerSampleClustering()" class="text-xs text-indigo-400 hover:text-indigo-300 underline cursor-pointer">
+          <i class="fa-solid fa-arrows-rotate mr-1"></i>Re-analyze Sample Reviews
+        </button>
+      </div>
+    </div>
+
+    <!-- Market Trends & Macro KPI Ribbon -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <!-- KPI 1: Market Health Index -->
+      <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-indigo-900/50 p-4 shadow-lg backdrop-blur">
+        <div class="flex items-center justify-between text-indigo-300 text-xs font-semibold mb-1">
+          <span>Market Health Index</span>
+          <i class="fa-solid fa-heart-pulse text-indigo-400"></i>
+        </div>
+        <div id="kpi-market-health" class="text-2xl font-black text-indigo-200 font-mono tracking-tight">&mdash;</div>
+        <p class="text-[10px] text-slate-400 mt-1">Regional service viability</p>
+      </div>
+
+      <!-- KPI 2: Mean Area Rating -->
+      <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950/40 border border-cyan-900/50 p-4 shadow-lg backdrop-blur">
+        <div class="flex items-center justify-between text-cyan-300 text-xs font-semibold mb-1">
+          <span>Mean Area Rating</span>
+          <i class="fa-solid fa-star text-amber-400"></i>
+        </div>
+        <div id="kpi-avg-rating" class="text-2xl font-black text-cyan-200 font-mono tracking-tight">&mdash;</div>
+        <p class="text-[10px] text-slate-400 mt-1">Baseline customer satisfaction</p>
+      </div>
+
+      <!-- KPI 3: Top Opportunity Score -->
+      <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-amber-900/50 p-4 shadow-lg backdrop-blur">
+        <div class="flex items-center justify-between text-amber-300 text-xs font-semibold mb-1">
+          <span>Top Opportunity Score</span>
+          <i class="fa-solid fa-arrow-trend-up text-amber-400"></i>
+        </div>
+        <div id="kpi-top-opp-score" class="text-2xl font-black text-amber-200 font-mono tracking-tight">&mdash;</div>
+        <p id="kpi-prime-target-badge" class="text-[10px] text-slate-400 mt-1">Cluster Prime Target</p>
+      </div>
+
+      <!-- KPI 4: Primary Proposed Venture -->
+      <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 border border-emerald-900/50 p-4 shadow-lg backdrop-blur">
+        <div class="flex items-center justify-between text-emerald-300 text-xs font-semibold mb-1">
+          <span>Primary Venture</span>
+          <i class="fa-solid fa-lightbulb text-emerald-400"></i>
+        </div>
+        <div id="kpi-top-venture-name" class="text-sm font-bold text-emerald-200 truncate mt-1.5" title="">&mdash;</div>
+        <p id="kpi-top-archetype" class="text-[10px] text-slate-400 mt-1 truncate">Strategic Recommendation</p>
+      </div>
+    </div>
+
+    <!-- Regional Market Gap Detection Banner -->
+    <div id="market-gap-banner" class="rounded-2xl bg-gradient-to-r from-indigo-950/40 via-slate-900 to-slate-900 border border-indigo-800/40 p-5 flex items-start space-x-4 shadow-lg">
+      <div class="w-11 h-11 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/30 text-xl">
+        <i class="fa-solid fa-radar"></i>
+      </div>
+      <div class="space-y-1">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center space-x-2">
+          <span>Regional Market Trend &amp; Opportunity Gap Detection</span>
+          <span class="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">Live Insight</span>
+        </h3>
+        <p id="market-gap-text" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+          Loading market gap analysis and customer sentiment distribution...
+        </p>
+      </div>
+    </div>
+
+    <!-- Charts Grid: Market Opportunity Matrix & Strategic Radar Chart -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+      <!-- Left: Market Opportunity vs Risk Quadrant Map (7 cols) -->
+      <div class="md:col-span-7 rounded-2xl bg-slate-900/80 border border-slate-800/80 p-5 shadow-xl backdrop-blur space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center space-x-2">
+              <i class="fa-solid fa-cubes-stacked text-amber-400"></i>
+              <span>Market Opportunity vs Risk Matrix</span>
+            </h4>
+            <p class="text-[11px] text-slate-400">Customer Satisfaction (Rating) vs Market Demand Volume</p>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded">Bubble Size = Market Share %</span>
+        </div>
+        
+        <div class="relative w-full h-[340px]">
+          <canvas id="marketMatrixChart"></canvas>
+        </div>
+
+        <!-- Quadrant Strategic Legend -->
+        <div class="grid grid-cols-2 gap-2 text-[10px] pt-2 border-t border-slate-800/60 text-slate-400">
+          <div class="flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><span><strong>Top-Right:</strong> Market Leaders (Moat Defense)</span></div>
+          <div class="flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-cyan-400"></span><span><strong>Top-Left:</strong> Boutique Growth Niches</span></div>
+          <div class="flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-rose-400"></span><span><strong>Bottom-Right:</strong> Service-Deficit Vacuum (Disrupt!)</span></div>
+          <div class="flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span><span><strong>Bottom-Left:</strong> Volatile / Distressed</span></div>
+        </div>
+      </div>
+
+      <!-- Right: Multi-Vector Strategic Viability Radar (5 cols) -->
+      <div class="md:col-span-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 p-5 shadow-xl backdrop-blur space-y-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center space-x-2">
+              <i class="fa-solid fa-compass-drafting text-indigo-400"></i>
+              <span>Venture Viability Radar</span>
+            </h4>
+            <p class="text-[11px] text-slate-400">5-Dimensional Statistical Profile Comparison</p>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded">Index (0-100)</span>
+        </div>
+        
+        <div class="relative w-full h-[340px] flex items-center justify-center">
+          <canvas id="ventureRadarChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Proposed Business Ventures & Real-World Decisions Section -->
+    <div class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center space-x-2">
+            <i class="fa-solid fa-briefcase text-emerald-400"></i>
+            <span>Targeted Business Ventures &amp; Actionable Decision Playbooks</span>
+          </h3>
+          <p class="text-xs text-slate-400">Empirical investment decisions and execution playbooks tailored to each cluster</p>
+        </div>
+
+        <!-- Cluster Filter Tabs -->
+        <div id="cluster-filter-tabs" class="flex flex-wrap items-center gap-1.5 text-xs">
+          <!-- Dynamically populated buttons -->
+        </div>
+      </div>
+
+      <!-- Decision Cards Container -->
+      <div id="strategic-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- Dynamically populated decision cards -->
+        <div class="col-span-2 text-center py-12 bg-slate-900/40 rounded-2xl border border-slate-800 text-slate-400 text-xs">
+          Loading market recommendations and strategic decision playbooks...
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Callout -->
+    <div class="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="space-y-1 text-center sm:text-left">
+        <h4 class="text-sm font-bold text-white">Need to refine your clustering or upload new data?</h4>
+        <p class="text-xs text-slate-400">Experiment with different cluster counts ($K=2 \dots 10$), inspect 2D PCA latent projections, or upload new city review files.</p>
+      </div>
+      <a href="/" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition flex items-center space-x-2 shrink-0 shadow-lg shadow-indigo-600/30">
+        <span>Go to Ingestion &amp; PCA Reviews</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-16 border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+    <p>City-Service Review Profiles for Business Pattern Segmentation &bull; Google Colab ML Engine &amp; Render</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+</body>
+</html>
