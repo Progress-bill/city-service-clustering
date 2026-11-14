@@ -23,6 +23,9 @@ let marketMatrixChart = null;
 let ventureRadarChart = null;
 let leafletMap = null;
 let markersLayer = null;
+let activeTileLayer = null;
+let mapBaseLayers = {};
+let activeBasemapKey = 'hybrid';
 let mapMarkerRegistry = {};
 
 // Real GPS Directions & Navigation State
@@ -233,7 +236,62 @@ function renderAnalyticsView(data, datasetName) {
 
 // -------------------------------------------------------------
 // Geospatial Leaflet Map Integration with Real-World GPS Pins
+// (Google Satellite Hybrid / Aerial / Streets / Terrain + Esri World Imagery)
 // -------------------------------------------------------------
+function buildMapBaseLayers() {
+  return {
+    // Google Maps Satellite + Road Labels Hybrid (lyrs=y) — no API key required
+    hybrid: L.tileLayer('https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps Satellite'
+    }),
+    // Pure Satellite / Aerial (Esri World Imagery + Google Satellite)
+    satellite: L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Earth / Esri World Imagery'
+    }),
+    // Google Maps Standard Streets & Places View (lyrs=m)
+    streets: L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps'
+    }),
+    // Geological / Topographical Terrain View (lyrs=p)
+    terrain: L.tileLayer('https://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Terrain / OpenStreetMap'
+    }),
+    // Esri World Imagery + OpenStreetMap fallback if Google tile servers are blocked on network
+    esri_fallback: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Tiles &copy; Esri'
+    })
+  };
+}
+
+window.switchMapBasemap = function(mode) {
+  if (!leafletMap || !mapBaseLayers[mode]) return;
+  if (activeTileLayer) {
+    leafletMap.removeLayer(activeTileLayer);
+  }
+  activeTileLayer = mapBaseLayers[mode];
+  activeTileLayer.addTo(leafletMap);
+  activeBasemapKey = mode;
+
+  ['hybrid', 'satellite', 'streets', 'terrain'].forEach(k => {
+    const btn = document.getElementById(`basemap-btn-${k}`);
+    if (!btn) return;
+    if (k === mode) {
+      btn.className = 'px-2.5 py-1 rounded-md bg-emerald-600/30 text-emerald-200 border border-emerald-500/40 flex items-center space-x-1 cursor-pointer transition';
+    } else {
+      btn.className = 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white flex items-center space-x-1 cursor-pointer transition';
+    }
+  });
+};
+
 function initOrUpdateLeafletMap(data) {
   const mapContainer = document.getElementById('opportunity-map');
   if (!mapContainer || typeof L === 'undefined') return;
@@ -243,20 +301,26 @@ function initOrUpdateLeafletMap(data) {
   if (mapPinCount) mapPinCount.textContent = entities.length;
 
   if (!leafletMap) {
-    // Initial map position
+    // Initial map position from dataset coordinates
     const initLat = entities.length > 0 && entities[0].lat ? entities[0].lat : 40.0175;
     const initLng = entities.length > 0 && entities[0].lng ? entities[0].lng : -105.2750;
 
     leafletMap = L.map('opportunity-map', {
       zoomControl: true,
-      attributionControl: false
-    }).setView([initLat, initLng], 13);
+      attributionControl: true
+    }).setView([initLat, initLng], 14);
 
-    // Dark Tile Layer (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      subdomains: 'abcd'
-    }).addTo(leafletMap);
+    mapBaseLayers = buildMapBaseLayers();
+    activeTileLayer = mapBaseLayers.hybrid;
+    activeTileLayer.on('tileerror', () => {
+      // Automatic fallback to Esri World Satellite Imagery if network blocks mt0..3.google.com
+      if (activeBasemapKey === 'hybrid' && activeTileLayer !== mapBaseLayers.esri_fallback) {
+        leafletMap.removeLayer(activeTileLayer);
+        activeTileLayer = mapBaseLayers.esri_fallback;
+        activeTileLayer.addTo(leafletMap);
+      }
+    });
+    activeTileLayer.addTo(leafletMap);
 
     markersLayer = L.layerGroup().addTo(leafletMap);
   }
@@ -304,10 +368,11 @@ function plotMapMarkers(entities, filterCluster = 'all', filterDistrict = 'all')
     const safeName = (e.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
     const safeAddr = (e.address || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
     const gmapsUrl = e.google_maps_url || `https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lng}`;
+    const gmapsSatUrl = `https://www.google.com/maps/@${e.lat},${e.lng},19z/data=!3m1!1e3`;
 
     // Glassmorphism Rich Popup with GPS Routing Trigger
     const popupHtml = `
-      <div class="space-y-2 text-xs" style="min-width: 230px;">
+      <div class="space-y-2 text-xs" style="min-width: 240px;">
         <div class="flex items-center justify-between border-b border-slate-700/80 pb-1.5">
           <span class="font-bold text-white tracking-tight">${e.name}</span>
           <span class="px-1.5 py-0.5 rounded text-[10px] font-bold" style="background: ${color.fill}; color: #ffffff;">
@@ -324,9 +389,12 @@ function plotMapMarkers(entities, filterCluster = 'all', filterDistrict = 'all')
             <i class="fa-solid fa-location-dot text-[10px] mt-0.5 shrink-0 text-cyan-400"></i>
             <span>${e.address}</span>
           </div>
-          <div class="font-mono text-[9px] text-cyan-300 flex items-center space-x-1">
-            <i class="fa-solid fa-satellite text-[8px] text-emerald-400"></i>
-            <span>GPS: ${e.lat.toFixed(5)}, ${e.lng.toFixed(5)}</span>
+          <div class="font-mono text-[9px] text-cyan-300 flex items-center justify-between">
+            <span class="flex items-center space-x-1">
+              <i class="fa-solid fa-satellite text-[8px] text-emerald-400"></i>
+              <span>Lat/Lng: ${e.lat.toFixed(5)}, ${e.lng.toFixed(5)}</span>
+            </span>
+            ${e.has_real_gps ? '<span class="px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[8px]">GPS Verified</span>' : ''}
           </div>
         </div>
 
@@ -346,15 +414,15 @@ function plotMapMarkers(entities, filterCluster = 'all', filterDistrict = 'all')
           ${e.investment_action}
         </div>
 
-        <!-- Real GPS Route & Navigation Buttons -->
+        <!-- Real GPS Route & Google Maps Satellite Buttons -->
         <div class="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-800">
           <button onclick="requestGpsRoute(${e.lat}, ${e.lng}, '${safeName}', '${safeAddr}', '${e.id}', '${gmapsUrl}')" class="py-1.5 px-2 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 border border-emerald-500/40 text-[10px] font-bold text-center flex items-center justify-center space-x-1 cursor-pointer">
             <i class="fa-solid fa-diamond-turn-right text-emerald-400"></i>
             <span>Get Directions</span>
           </button>
-          <a href="${gmapsUrl}" target="_blank" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px] font-semibold text-center flex items-center justify-center space-x-1 transition">
-            <i class="fa-solid fa-map-location-dot text-amber-400"></i>
-            <span>Google Maps</span>
+          <a href="${gmapsSatUrl}" target="_blank" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px] font-semibold text-center flex items-center justify-center space-x-1 transition">
+            <i class="fa-solid fa-satellite text-amber-400"></i>
+            <span>Google Satellite</span>
           </a>
         </div>
       </div>
@@ -368,8 +436,8 @@ function plotMapMarkers(entities, filterCluster = 'all', filterDistrict = 'all')
   const mapPinCount = document.getElementById('map-pin-count');
   if (mapPinCount) mapPinCount.textContent = filtered.length;
 
-  if (bounds.length > 0 && filterCluster === 'all' && filterDistrict === 'all') {
-    leafletMap.fitBounds(bounds, { padding: [30, 30] });
+  if (bounds.length > 0) {
+    leafletMap.fitBounds(bounds, { padding: [35, 35], maxZoom: 17 });
   }
 }
 

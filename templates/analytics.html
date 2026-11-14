@@ -281,6 +281,25 @@
 
         <!-- Map Quick Controls & Reset -->
         <div class="flex flex-wrap items-center gap-2 text-xs">
+          <!-- Satellite / Hybrid / Roadmap / Terrain Basemap Switcher -->
+          <div class="inline-flex items-center bg-slate-900 border border-slate-700 rounded-lg p-0.5 text-[11px] font-semibold">
+            <button type="button" id="basemap-btn-hybrid" onclick="switchMapBasemap('hybrid')" class="px-2.5 py-1 rounded-md bg-emerald-600/30 text-emerald-200 border border-emerald-500/40 flex items-center space-x-1 cursor-pointer transition">
+              <i class="fa-solid fa-satellite"></i>
+              <span>Satellite Hybrid</span>
+            </button>
+            <button type="button" id="basemap-btn-satellite" onclick="switchMapBasemap('satellite')" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white flex items-center space-x-1 cursor-pointer transition">
+              <i class="fa-solid fa-globe"></i>
+              <span>Aerial</span>
+            </button>
+            <button type="button" id="basemap-btn-streets" onclick="switchMapBasemap('streets')" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white flex items-center space-x-1 cursor-pointer transition">
+              <i class="fa-solid fa-road"></i>
+              <span>Google Streets</span>
+            </button>
+            <button type="button" id="basemap-btn-terrain" onclick="switchMapBasemap('terrain')" class="px-2.5 py-1 rounded-md text-slate-400 hover:text-white flex items-center space-x-1 cursor-pointer transition">
+              <i class="fa-solid fa-mountain-sun"></i>
+              <span>Terrain</span>
+            </button>
+          </div>
           <select id="map-filter-cluster" onchange="onMapFilterChange()" class="bg-slate-900 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none">
             <option value="all">All Archetype Clusters</option>
           </select>

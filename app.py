@@ -156,6 +156,49 @@ NAME_POOLS = {
 }
 
 
+def _parse_lat_lng_pair(raw_lat, raw_lng, raw_coord_str=None) -> tuple:
+    """
+    Parse real latitude and longitude from explicit columns, WKT POINT(lng lat),
+    GeoJSON dicts, or 'lat, lng' strings. Returns (has_real_gps, lat, lng).
+    """
+    if pd.notna(raw_lat) and pd.notna(raw_lng):
+        try:
+            b_lat = float(str(raw_lat).strip())
+            b_lng = float(str(raw_lng).strip())
+            # Handle accidentally swapped (lng, lat) when lng is in [-180,-90] or [90,180]
+            if abs(b_lat) > 90.0 and abs(b_lng) <= 90.0 and abs(b_lat) <= 180.0:
+                b_lat, b_lng = b_lng, b_lat
+            if abs(b_lat) <= 90.0 and abs(b_lng) <= 180.0 and (abs(b_lat) > 0.001 or abs(b_lng) > 0.001):
+                return True, round(b_lat, 6), round(b_lng, 6)
+        except (ValueError, TypeError):
+            pass
+
+    if raw_coord_str is not None and pd.notna(raw_coord_str):
+        import re
+        s = str(raw_coord_str).strip()
+        # WKT POINT (lng lat)
+        m_wkt = re.search(r"POINT\s*\(\s*([-+]?\d+\.?\d*)\s+([-+]?\d+\.?\d*)\s*\)", s, re.IGNORECASE)
+        if m_wkt:
+            try:
+                lng_v, lat_v = float(m_wkt.group(1)), float(m_wkt.group(2))
+                if abs(lat_v) <= 90.0 and abs(lng_v) <= 180.0:
+                    return True, round(lat_v, 6), round(lng_v, 6)
+            except ValueError:
+                pass
+        # Generic "lat, lng" or "[lat, lng]" pair
+        nums = re.findall(r"[-+]?\d+\.\d+", s)
+        if len(nums) >= 2:
+            try:
+                a, b = float(nums[0]), float(nums[1])
+                if abs(a) > 90.0 and abs(b) <= 90.0:
+                    a, b = b, a
+                if abs(a) <= 90.0 and abs(b) <= 180.0 and (abs(a) > 0.001 or abs(b) > 0.001):
+                    return True, round(a, 6), round(b, 6)
+            except ValueError:
+                pass
+    return False, 0.0, 0.0
+
+
 def extract_and_enrich_entity_locations(df_raw: pd.DataFrame, biz_ids: pd.Series, labels: np.ndarray, features_df: pd.DataFrame, strategic_clusters: list) -> tuple:
     """
     Extracts explicit location and entity metadata from DataFrame if present,
@@ -166,14 +209,20 @@ def extract_and_enrich_entity_locations(df_raw: pd.DataFrame, biz_ids: pd.Series
     """
     col_map = {str(c).strip().lower(): c for c in df_raw.columns}
 
-    name_col = next((col_map[c] for c in ["business_name", "name", "title", "store_name", "company", "biz_name", "entity_name"] if c in col_map), None)
-    type_col = next((col_map[c] for c in ["business_type", "category", "categories", "type", "industry", "license_type", "service_type", "description"] if c in col_map), None)
-    district_col = next((col_map[c] for c in ["district", "neighborhood", "city", "zone", "borough", "area"] if c in col_map), None)
-    address_col = next((col_map[c] for c in ["address", "street", "street_address", "full_address", "location"] if c in col_map), None)
-    lat_candidates = ["latitude", "lat", "y_coord", "lat_coord", "point_latitude", "y", "geo_latitude", "business_lat"]
-    lng_candidates = ["longitude", "lng", "lon", "long", "x_coord", "lng_coord", "point_longitude", "x", "geo_longitude", "business_lng"]
+    name_col = next((col_map[c] for c in ["business_name", "name", "title", "store_name", "company", "biz_name", "entity_name", "dba", "trade_name", "licensee"] if c in col_map), None)
+    type_col = next((col_map[c] for c in ["business_type", "category", "categories", "type", "industry", "license_type", "service_type", "description", "naics_desc", "sector"] if c in col_map), None)
+    district_col = next((col_map[c] for c in ["district", "neighborhood", "city", "zone", "borough", "area", "subarea", "ward", "zip", "postal_code"] if c in col_map), None)
+    address_col = next((col_map[c] for c in ["address", "street", "street_address", "full_address", "location", "site_address", "business_address", "physical_address"] if c in col_map), None)
+    lat_candidates = ["latitude", "lat", "y_coord", "lat_coord", "point_latitude", "y", "geo_latitude", "business_lat", "lat_dd", "location_lat"]
+    lng_candidates = ["longitude", "lng", "lon", "long", "x_coord", "lng_coord", "point_longitude", "x", "geo_longitude", "business_lng", "lon_dd", "lng_dd", "location_lng", "location_lon"]
     lat_col = next((col_map[c] for c in lat_candidates if c in col_map), None)
     lng_col = next((col_map[c] for c in lng_candidates if c in col_map), None)
+    # Fallback substring matching for lat/lng columns (e.g., "Geo Latitude", "LON_WGS84")
+    if lat_col is None:
+        lat_col = next((orig for low, orig in col_map.items() if ("lat" in low and "plat" not in low and "relat" not in low)), None)
+    if lng_col is None:
+        lng_col = next((orig for low, orig in col_map.items() if ("lon" in low or "lng" in low)), None)
+    coord_col = next((col_map[c] for c in ["coordinates", "coord", "coords", "geopoint", "geo_point", " geo_point_2d", "the_geom", "geometry", "wkt", "point", "latlng", "lat_long"] if c in col_map), None)
 
     rating_col = next((c for c in ["mean_rating", "avg_rating", "rating", "score"] if c in features_df.columns), None)
     volume_col = next((c for c in ["log_review_count", "num_of_reviews", "review_count", "reviews", "volume"] if c in features_df.columns), None)
@@ -185,7 +234,7 @@ def extract_and_enrich_entity_locations(df_raw: pd.DataFrame, biz_ids: pd.Series
     id_col = next((col_map[c] for c in ["gmap_id", "business_id", "biz_id", "id", "store_id"] if c in col_map), None)
     meta_by_id = {}
     if id_col is not None and id_col in df_raw.columns:
-        subset_cols = [c for c in [name_col, type_col, district_col, address_col, lat_col, lng_col] if c is not None]
+        subset_cols = [c for c in [name_col, type_col, district_col, address_col, lat_col, lng_col, coord_col] if c is not None]
         if subset_cols:
             first_rows = df_raw.drop_duplicates(subset=[id_col]).set_index(id_col)
             meta_by_id = first_rows[subset_cols].to_dict(orient="index")
@@ -261,22 +310,19 @@ def extract_and_enrich_entity_locations(df_raw: pd.DataFrame, biz_ids: pd.Series
         # 5. Coords (Real GPS Coordinates)
         raw_lat = meta_dict.get(lat_col) if lat_col in meta_dict else (df_raw.loc[original_idx, lat_col] if lat_col and original_idx in df_raw.index else None)
         raw_lng = meta_dict.get(lng_col) if lng_col in meta_dict else (df_raw.loc[original_idx, lng_col] if lng_col and original_idx in df_raw.index else None)
-        has_real_gps = False
-        if pd.notna(raw_lat) and pd.notna(raw_lng):
-            try:
-                b_lat = float(raw_lat)
-                b_lng = float(raw_lng)
-                if abs(b_lat) <= 90.0 and abs(b_lng) <= 180.0 and (abs(b_lat) > 0.001 or abs(b_lng) > 0.001):
-                    has_real_gps = True
-                    b_lat = round(b_lat, 6)
-                    b_lng = round(b_lng, 6)
-            except (ValueError, TypeError):
-                has_real_gps = False
+        raw_coord = meta_dict.get(coord_col) if coord_col in meta_dict else (df_raw.loc[original_idx, coord_col] if coord_col and original_idx in df_raw.index else None)
+        if raw_coord is None and address_col and b_addr:
+            raw_coord = b_addr
+        has_real_gps, b_lat, b_lng = _parse_lat_lng_pair(raw_lat, raw_lng, raw_coord)
 
         if not has_real_gps:
             target_d = next((d for d in CITY_DISTRICTS if d["name"] == b_dist), dist_preset)
-            jitter_lat = (((idx * 17) % 100) - 50) * 0.00015
-            jitter_lng = (((idx * 31) % 100) - 50) * 0.00015
+            # Spread fallback coordinates organically across the district (Golden-angle spiral, not a tight box)
+            import math
+            angle = idx * 2.399963229728653  # Golden angle in radians
+            radius = 0.0012 + (math.sqrt((idx % 120) + 1) * 0.00095)
+            jitter_lat = math.sin(angle) * radius * 0.78
+            jitter_lng = math.cos(angle) * radius
             b_lat = round(target_d["lat"] + jitter_lat, 6)
             b_lng = round(target_d["lng"] + jitter_lng, 6)
 
@@ -896,12 +942,19 @@ def train_proxy():
                     result_json["market_trends"] = intel.get("macro_trends", {})
 
                 # Defensive enrichment: If remote Colab worker omitted entity_locations
-                if "entity_locations" not in result_json or not result_json.get("entity_locations"):
+                # OR returned older synthetic coordinates (missing has_real_gps), re-extract
+                # coordinates directly from the uploaded file so real GPS pins always appear.
+                existing_locs = result_json.get("entity_locations") or []
+                has_any_real_gps = any(item.get("has_real_gps") for item in existing_locs)
+                if not existing_locs or not has_any_real_gps:
                     try:
                         df_raw = parse_dataset_bytes(file_bytes, filename)
                         labels = np.array([pt.get("cluster", 0) for pt in result_json.get("scatter_points", [])])
-                        id_col = next((c for c in ["gmap_id", "business_id", "id", "name"] if c in df_raw.columns), None)
-                        biz_ids = df_raw[id_col].astype(str) if id_col else pd.Series([f"item_{i+1}" for i in range(len(labels))])
+                        col_map_r = {str(c).strip().lower(): c for c in df_raw.columns}
+                        id_col = next((col_map_r[c] for c in ["gmap_id", "business_id", "biz_id", "id", "name", "business_name", "store_id"] if c in col_map_r), None)
+                        biz_ids = df_raw[id_col].astype(str) if id_col else pd.Series([f"item_{i+1}" for i in range(len(df_raw))], index=df_raw.index)
+                        if len(labels) < len(biz_ids):
+                            biz_ids = biz_ids.iloc[:len(labels)]
                         num_df = df_raw.select_dtypes(include=[np.number])
                         ent, loc_intel = extract_and_enrich_entity_locations(
                             df_raw, biz_ids, labels, num_df, result_json.get("strategic_decisions", [])
