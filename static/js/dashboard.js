@@ -3,6 +3,16 @@
  * Chart.js 4.x Implementation with Remote Colab ML Engine Integration
  */
 
+// Stable per-browser ID so the server can hand results to the Analytics page
+function getCityServiceClientId() {
+  let id = localStorage.getItem('city_service_client_id');
+  if (!id) {
+    id = 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem('city_service_client_id', id);
+  }
+  return id;
+}
+
 // Palette of distinct modern neon colors for clusters K=0 to K=9
 const CLUSTER_COLORS = [
   { fill: 'rgba(99, 102, 241, 0.75)', border: '#6366f1', glow: 'rgba(99, 102, 241, 0.4)' },  // Indigo
@@ -353,6 +363,7 @@ async function executeClustering(options = {}) {
   const formData = new FormData();
   formData.append('k', kVal);
   formData.append('worker_url', currentWorkerUrl);
+  formData.append('client_id', getCityServiceClientId());
 
   if (useSample) {
     formData.append('use_sample', 'true');
@@ -468,13 +479,22 @@ function renderDashboard(data) {
   detectedSchemaPill.textContent = data.schema_detected || 'Aggregated Dataset';
   chartPlaceholder.classList.add('hidden');
 
-  // Cache results for dedicated Analytics & Market Recommendations page
+  // Cache results for dedicated Analytics & Market Recommendations page.
+  // The server also keeps a copy (per client_id), so this is a best-effort cache:
+  // large datasets can exceed the ~5MB localStorage quota.
+  const activeFileName = (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : (data.dataset_name || data.schema_detected || 'Processed Dataset');
+  localStorage.removeItem('city_service_ml_results'); // never leave stale results behind
+  localStorage.setItem('city_service_dataset_name', activeFileName);
   try {
     localStorage.setItem('city_service_ml_results', JSON.stringify(data));
-    const activeFileName = (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : (data.schema_detected || 'Processed Dataset');
-    localStorage.setItem('city_service_dataset_name', activeFileName);
   } catch (e) {
-    console.warn('Could not cache results to localStorage:', e);
+    try {
+      // Retry with a compact payload (drop heavy PCA scatter points)
+      const compact = Object.assign({}, data, { scatter_points: [] });
+      localStorage.setItem('city_service_ml_results', JSON.stringify(compact));
+    } catch (e2) {
+      console.warn('Results too large for localStorage; Analytics page will load them from the server.', e2);
+    }
   }
 
   // Reveal Analytics CTA Banner

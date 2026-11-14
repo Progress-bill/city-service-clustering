@@ -1,101 +1,101 @@
-business_id,mean_rating,std_rating,log_review_count,avg_review_length
-0x880_budget_service_001,2.892,1.311,3.638,124.5
-0x880_budget_service_002,3.429,1.137,3.091,120.0
-0x880_budget_service_003,3.057,1.241,3.584,118.9
-0x880_budget_service_004,3.214,1.292,3.367,105.1
-0x880_budget_service_005,3.281,1.352,3.497,116.3
-0x880_budget_service_006,3.263,1.116,3.664,120.7
-0x880_budget_service_007,3.476,1.22,3.761,110.2
-0x880_budget_service_008,3.033,1.449,3.434,109.7
-0x880_budget_service_009,2.929,1.1,3.367,110.4
-0x880_budget_service_010,3.048,1.253,3.091,105.0
-0x880_budget_service_011,3.0,1.343,3.738,102.0
-0x880_budget_service_012,3.229,1.104,3.892,112.0
-0x880_budget_service_013,2.895,1.252,3.664,104.2
-0x880_budget_service_014,3.034,1.299,3.401,116.2
-0x880_budget_service_015,3.472,1.213,3.611,119.1
-0x880_budget_service_016,3.312,1.244,3.892,116.6
-0x880_budget_service_017,3.367,1.354,3.434,120.1
-0x880_budget_service_018,3.235,1.214,3.555,105.9
-0x880_budget_service_019,2.913,1.248,3.178,110.1
-0x880_budget_service_020,2.85,1.216,3.714,114.2
-0x880_budget_service_021,3.282,1.218,3.689,120.6
-0x880_budget_service_022,3.432,1.104,3.638,109.7
-0x880_budget_service_023,3.3,1.136,3.932,120.4
-0x880_budget_service_024,3.393,1.08,3.367,107.9
-0x880_budget_service_025,2.96,1.28,3.932,115.7
-0x880_elite_dining_001,4.76,0.427,3.932,115.8
-0x880_elite_dining_002,4.891,0.311,3.85,104.7
-0x880_elite_dining_003,4.808,0.394,3.97,114.6
-0x880_elite_dining_004,4.909,0.287,4.025,105.8
-0x880_elite_dining_005,4.865,0.342,3.638,115.7
-0x880_elite_dining_006,4.758,0.429,3.526,123.3
-0x880_elite_dining_007,4.949,0.221,3.689,107.4
-0x880_elite_dining_008,4.904,0.295,3.97,120.5
-0x880_elite_dining_009,4.897,0.303,3.689,119.1
-0x880_elite_dining_010,4.772,0.42,4.06,117.1
-0x880_elite_dining_011,4.842,0.365,3.664,111.5
-0x880_elite_dining_012,4.824,0.381,3.555,102.3
-0x880_elite_dining_013,4.857,0.35,3.761,114.1
-0x880_elite_dining_014,4.892,0.311,3.638,130.3
-0x880_elite_dining_015,4.82,0.384,3.932,113.3
-0x880_elite_dining_016,4.805,0.396,3.738,113.3
-0x880_elite_dining_017,4.8,0.4,4.025,110.8
-0x880_elite_dining_018,4.884,0.321,3.784,109.6
-0x880_elite_dining_019,4.933,0.249,4.111,113.4
-0x880_elite_dining_020,4.947,0.223,4.06,113.1
-0x880_local_niche_001,4.333,0.471,1.946,104.5
-0x880_local_niche_002,4.667,0.471,1.946,125.2
-0x880_local_niche_003,5.0,0.0,1.099,128.5
-0x880_local_niche_004,4.0,0.0,1.609,91.0
-0x880_local_niche_005,4.5,0.5,1.099,85.0
-0x880_local_niche_006,5.0,0.0,1.099,129.5
-0x880_local_niche_007,4.6,0.49,1.792,113.8
-0x880_local_niche_008,4.875,0.331,2.197,95.5
-0x880_local_niche_009,4.833,0.373,1.946,92.3
-0x880_local_niche_010,4.333,0.471,1.386,101.3
-0x880_local_niche_011,4.625,0.484,2.197,127.6
-0x880_local_niche_012,4.5,0.5,1.609,107.0
-0x880_local_niche_013,4.667,0.471,1.386,150.0
-0x880_local_niche_014,5.0,0.0,1.609,96.8
-0x880_local_niche_015,4.6,0.49,1.792,127.0
-0x880_local_niche_016,4.0,0.0,1.386,68.7
-0x880_local_niche_017,4.625,0.484,2.197,96.8
-0x880_local_niche_018,4.5,0.5,1.609,104.0
-0x880_local_niche_019,4.5,0.5,1.946,104.3
-0x880_local_niche_020,4.8,0.4,1.792,107.8
-0x880_local_niche_021,4.6,0.49,1.792,114.2
-0x880_local_niche_022,4.5,0.5,1.099,109.0
-0x880_local_niche_023,4.5,0.5,2.197,97.2
-0x880_local_niche_024,4.625,0.484,2.197,91.9
-0x880_local_niche_025,4.333,0.471,1.386,74.3
-0x880_local_niche_026,4.5,0.5,1.099,117.5
-0x880_local_niche_027,4.333,0.471,1.946,114.2
-0x880_local_niche_028,4.667,0.471,1.386,91.3
-0x880_local_niche_029,4.667,0.471,1.386,137.0
-0x880_local_niche_030,4.667,0.471,1.386,103.7
-0x880_neglected_utility_001,2.351,0.779,3.638,105.3
-0x880_neglected_utility_002,2.48,0.7,3.258,116.9
-0x880_neglected_utility_003,2.0,0.804,3.555,126.1
-0x880_neglected_utility_004,2.172,0.833,3.401,110.0
-0x880_neglected_utility_005,2.229,0.721,3.584,101.8
-0x880_neglected_utility_006,2.125,0.927,3.497,112.8
-0x880_neglected_utility_007,2.176,0.856,3.555,118.3
-0x880_neglected_utility_008,2.207,0.996,3.401,123.1
-0x880_neglected_utility_009,2.375,0.904,3.219,119.5
-0x880_neglected_utility_010,2.333,0.816,3.332,111.1
-0x880_neglected_utility_011,2.167,0.986,3.219,103.0
-0x880_neglected_utility_012,2.185,0.818,3.332,117.3
-0x880_neglected_utility_013,2.667,0.943,3.434,120.2
-0x880_neglected_utility_014,2.2,0.781,3.714,115.6
-0x880_neglected_utility_015,2.25,0.901,2.833,108.6
-0x880_neglected_utility_016,2.051,0.904,3.689,115.3
-0x880_neglected_utility_017,2.188,0.726,2.833,106.5
-0x880_neglected_utility_018,2.207,0.846,3.401,104.2
-0x880_neglected_utility_019,2.371,0.865,3.584,102.2
-0x880_neglected_utility_020,2.394,1.071,3.526,106.2
-0x880_neglected_utility_021,2.125,0.96,3.497,112.6
-0x880_neglected_utility_022,2.225,0.935,3.714,118.0
-0x880_neglected_utility_023,2.407,0.733,3.332,103.0
-0x880_neglected_utility_024,2.231,0.973,3.689,106.5
-0x880_neglected_utility_025,2.375,0.796,3.714,115.4
+business_id,business_name,business_type,district,address,latitude,longitude,mean_rating,std_rating,log_review_count,avg_review_length
+0x880_budget_service_001,QuickFix Auto Collision & Repair,Automotive & Fleet Care,Downtown Commercial Core,1705 15th St,40.0162,-105.275,2.892,1.311,3.638,124.5
+0x880_budget_service_002,Metro Express Plumbing & Drain,"HVAC, Plumbing & Electrical",North Industrial Corridor,3100 28th St,40.0315,-105.259,3.429,1.137,3.091,120.0
+0x880_budget_service_003,Front Range Budget Towing,Automotive & Fleet Care,North Industrial Corridor,4750 Valmont Rd,40.0345,-105.2395,3.057,1.241,3.584,118.9
+0x880_budget_service_004,Discount Appliance Repair Pros,Home Services & Contracting,Downtown Commercial Core,2050 26th St,40.0215,-105.261,3.214,1.292,3.367,105.1
+0x880_budget_service_005,Reliable 24/7 HVAC Solutions,"HVAC, Plumbing & Electrical",North Industrial Corridor,3300 Sterling Cir,40.036,-105.244,3.281,1.352,3.497,116.3
+0x880_budget_service_006,Citywide Commercial Cleaners,Commercial Cleaning & Janitorial,Downtown Commercial Core,1910 28th St,40.0195,-105.2595,3.263,1.116,3.664,120.7
+0x880_budget_service_007,Discount Brake & Tire Depot,Automotive & Fleet Care,North Industrial Corridor,3800 Arapahoe Ave,40.015,-105.244,3.476,1.22,3.761,110.2
+0x880_budget_service_008,Rapid Rooter Drain Doctors,"HVAC, Plumbing & Electrical",East Tech Commerce Hub,4840 Pearl Pkwy,40.026,-105.238,3.033,1.449,3.434,109.7
+0x880_budget_service_009,Affordable Electric Pros,"HVAC, Plumbing & Electrical",Downtown Commercial Core,2400 Central Ave,40.027,-105.249,2.929,1.1,3.367,110.4
+0x880_budget_service_010,Valley Transmission Specialist,Automotive & Fleet Care,North Industrial Corridor,4690 Valmont Rd,40.034,-105.241,3.048,1.253,3.091,105.0
+0x880_budget_service_011,Budget City Locksmiths,Home Services & Contracting,Downtown Commercial Core,1820 30th St,40.0185,-105.257,3.0,1.343,3.738,102.0
+0x880_budget_service_012,Speedy Auto Glass Express,Automotive & Fleet Care,North Industrial Corridor,3055 28th St,40.031,-105.2598,3.229,1.104,3.892,112.0
+0x880_budget_service_013,Midtown Handy Services,Home Services & Contracting,Downtown Commercial Core,2250 26th St,40.023,-105.2612,2.895,1.252,3.664,104.2
+0x880_budget_service_014,All-Star Carpet Cleaning,Commercial Cleaning & Janitorial,East Tech Commerce Hub,5300 Arapahoe Ave,40.0155,-105.228,3.034,1.299,3.401,116.2
+0x880_budget_service_015,Boulder Valley Muffler Shop,Automotive & Fleet Care,North Industrial Corridor,3220 28th St,40.0328,-105.2588,3.472,1.213,3.611,119.1
+0x880_budget_service_016,Downtown Emergency Plumbers,"HVAC, Plumbing & Electrical",Downtown Commercial Core,1950 14th St,40.016,-105.277,3.312,1.244,3.892,116.6
+0x880_budget_service_017,Colorado Express Moving Co,Commercial Logistics & Storage,East Tech Commerce Hub,4900 Pearl Pkwy,40.0265,-105.236,3.367,1.354,3.434,120.1
+0x880_budget_service_018,FastTrack Oil & Lube Express,Automotive & Fleet Care,Downtown Commercial Core,2500 28th St,40.0255,-105.259,3.235,1.214,3.555,105.9
+0x880_budget_service_019,Ace Drywall & Home Painters,Home Services & Contracting,North Industrial Corridor,3500 Sterling Cir,40.0365,-105.2435,2.913,1.248,3.178,110.1
+0x880_budget_service_020,Apex Water Heater Repair,"HVAC, Plumbing & Electrical",North Industrial Corridor,2850 Iris Ave,40.035,-105.268,2.85,1.216,3.714,114.2
+0x880_budget_service_021,Economy Pest Control Group,Home Services & Contracting,Downtown Commercial Core,2300 30th St,40.0235,-105.2568,3.282,1.218,3.689,120.6
+0x880_budget_service_022,Metro Diesel & Fleet Repair,Automotive & Fleet Care,North Industrial Corridor,4720 Valmont Rd,40.0342,-105.2405,3.432,1.104,3.638,109.7
+0x880_budget_service_023,Boulder Valley Lock & Key,Home Services & Contracting,Downtown Commercial Core,1905 15th St,40.0158,-105.2752,3.3,1.136,3.932,120.4
+0x880_budget_service_024,Precision Window & Door Fix,Home Services & Contracting,North Industrial Corridor,3400 28th St,40.034,-105.258,3.393,1.08,3.367,107.9
+0x880_budget_service_025,Rapid Clean Pressure Washing,Commercial Cleaning & Janitorial,Downtown Commercial Core,2100 26th St,40.022,-105.2615,2.96,1.28,3.932,115.7
+0x880_elite_dining_001,Boulder Peak Artisan Bistro,Commercial Dining & Bistro,Pearl Street Promenade,1104 Pearl St,40.0178,-105.281,4.76,0.427,3.932,115.8
+0x880_elite_dining_002,Pearl Street Craft Roastery,Specialty Coffee Roasters,Pearl Street Promenade,1325 Pearl St,40.0183,-105.2785,4.891,0.311,3.85,104.7
+0x880_elite_dining_003,Chautauqua Grill & Wine Bar,Commercial Dining & Bistro,South Foothills District,900 Baseline Rd,39.9985,-105.282,4.808,0.394,3.97,114.6
+0x880_elite_dining_004,Flatirons Fine Dining Room,Commercial Dining & Bistro,Downtown Commercial Core,1048 Walnut St,40.0165,-105.2825,4.909,0.287,4.025,105.8
+0x880_elite_dining_005,Alpine Reserve Kitchen,Commercial Dining & Bistro,Pearl Street Promenade,1421 Pearl St,40.0187,-105.2768,4.865,0.342,3.638,115.7
+0x880_elite_dining_006,Sumac Mediterranean Table,Commercial Dining & Bistro,Downtown Commercial Core,1900 Broadway,40.0152,-105.2792,4.758,0.429,3.526,123.3
+0x880_elite_dining_007,Bramble Craft Gastropub,Commercial Dining & Bistro,Downtown Commercial Core,1970 13th St,40.0161,-105.278,4.949,0.221,3.689,107.4
+0x880_elite_dining_008,Flatirons Dental & Aesthetics,"Health, Dental & Wellness",Downtown Commercial Core,1800 15th St,40.0169,-105.2755,4.904,0.295,3.97,120.5
+0x880_elite_dining_009,Highland Artisan Bakery,Commercial Dining & Bistro,Pearl Street Promenade,1212 Pearl St,40.018,-105.28,4.897,0.303,3.689,119.1
+0x880_elite_dining_010,Summit Wellness Spa & Retreat,"Health, Dental & Wellness",South Foothills District,1002 9th St,39.9995,-105.2815,4.772,0.42,4.06,117.1
+0x880_elite_dining_011,Pike Organic Kitchen,Commercial Dining & Bistro,Downtown Commercial Core,1505 Pearl St,40.019,-105.275,4.842,0.365,3.664,111.5
+0x880_elite_dining_012,Vanguard Legal & Wealth Advisory,Professional Services,Downtown Commercial Core,1720 14th St,40.0166,-105.2769,4.824,0.381,3.555,102.3
+0x880_elite_dining_013,Front Range Medical Clinic,"Health, Dental & Wellness",Downtown Commercial Core,2100 Broadway,40.0145,-105.2788,4.857,0.35,3.761,114.1
+0x880_elite_dining_014,Colorado Craft Oyster Bar,Commercial Dining & Bistro,Pearl Street Promenade,1128 Pearl St,40.0179,-105.2808,4.892,0.311,3.638,130.3
+0x880_elite_dining_015,Eldorado Spring Wellness Hub,"Health, Dental & Wellness",South Foothills District,1250 Canyon Blvd,40.0148,-105.282,4.82,0.384,3.932,113.3
+0x880_elite_dining_016,Arapahoe Gourmet Charcuterie,Commercial Dining & Bistro,East Tech Commerce Hub,3200 Arapahoe Ave,40.0149,-105.251,4.805,0.396,3.738,113.3
+0x880_elite_dining_017,Sanitas Family Orthodontics,"Health, Dental & Wellness",Downtown Commercial Core,1650 Canyon Blvd,40.0155,-105.273,4.8,0.4,4.025,110.8
+0x880_elite_dining_018,Valmont Artisan Chocolatier,Boutique Retail & Food,Downtown Commercial Core,1750 15th St,40.0168,-105.2758,4.884,0.321,3.784,109.6
+0x880_elite_dining_019,Crestview Private Wealth,Professional Services,Downtown Commercial Core,1881 9th St,40.015,-105.2835,4.933,0.249,4.111,113.4
+0x880_elite_dining_020,Silver Fern Botanical Apothecary,"Health, Dental & Wellness",Pearl Street Promenade,1440 Pearl St,40.0188,-105.2762,4.947,0.223,4.06,113.1
+0x880_local_niche_001,Flatirons Holistic Physical Therapy,"Health, Dental & Wellness",South Foothills District,2750 Broadway,40.0075,-105.276,4.333,0.471,1.946,104.5
+0x880_local_niche_002,Apex Botanical Apothecary,Boutique Retail & Food,Pearl Street Promenade,1500 Pearl St,40.0191,-105.2748,4.667,0.471,1.946,125.2
+0x880_local_niche_003,Boulder Boutique Pilates Lab,Personal Fitness & Pilates,Downtown Commercial Core,2020 11th St,40.017,-105.2818,5.0,0.0,1.099,128.5
+0x880_local_niche_004,High Country Leather Crafts,Boutique Retail & Food,Pearl Street Promenade,1230 Pearl St,40.0181,-105.2798,4.0,0.0,1.609,91.0
+0x880_local_niche_005,Sanitas Acupuncture & Wellness,"Health, Dental & Wellness",South Foothills District,3100 Broadway,40.004,-105.275,4.5,0.5,1.099,85.0
+0x880_local_niche_006,Summit Ceramic Studio,Artisan Studio & Crafts,Downtown Commercial Core,1630 14th St,40.0163,-105.2771,5.0,0.0,1.099,129.5
+0x880_local_niche_007,Front Range Ortho Massage,"Health, Dental & Wellness",South Foothills District,2800 Baseline Rd,39.999,-105.261,4.6,0.49,1.792,113.8
+0x880_local_niche_008,Pearl Street Hat & Haberdashery,Boutique Retail & Food,Pearl Street Promenade,1310 Pearl St,40.0182,-105.2789,4.875,0.331,2.197,95.5
+0x880_local_niche_009,Alpine Custom Bicycles,Boutique Retail & Food,Downtown Commercial Core,2425 Canyon Blvd,40.015,-105.263,4.833,0.373,1.946,92.3
+0x880_local_niche_010,Flatirons Canine Day Spa,Specialty Pet Care & Clinic,South Foothills District,1955 28th St,40.02,-105.2585,4.333,0.471,1.386,101.3
+0x880_local_niche_011,Boulder Herb & Spice Co,Boutique Retail & Food,Pearl Street Promenade,1410 Pearl St,40.0186,-105.277,4.625,0.484,2.197,127.6
+0x880_local_niche_012,Canyon Yoga & Sound Sanctuary,Personal Fitness & Pilates,South Foothills District,1720 Canyon Blvd,40.0152,-105.272,4.5,0.5,1.609,107.0
+0x880_local_niche_013,Silver Lake Bookshop & Press,Boutique Retail & Food,Pearl Street Promenade,1140 Pearl St,40.018,-105.2805,4.667,0.471,1.386,150.0
+0x880_local_niche_014,Piedmont Custom Goldsmiths,Boutique Retail & Food,Downtown Commercial Core,1815 13th St,40.0159,-105.2781,5.0,0.0,1.609,96.8
+0x880_local_niche_015,Foothills Acoustic Guitar Workshop,Artisan Studio & Crafts,South Foothills District,2950 Baseline Rd,39.9992,-105.258,4.6,0.49,1.792,127.0
+0x880_local_niche_016,Eldorado Organic Micro-Bakery,Commercial Dining & Bistro,South Foothills District,3200 Broadway,40.003,-105.2745,4.0,0.0,1.386,68.7
+0x880_local_niche_017,Boulder Valley Bonsai Garden,Boutique Retail & Food,South Foothills District,2550 9th St,40.008,-105.2825,4.625,0.484,2.197,96.8
+0x880_local_niche_018,Sanitas Vintage Vinyl & Hi-Fi,Boutique Retail & Food,Downtown Commercial Core,1920 13th St,40.016,-105.2782,4.5,0.5,1.609,104.0
+0x880_local_niche_019,Highland Equine & Pet Rehab,Specialty Pet Care & Clinic,South Foothills District,3450 Baseline Rd,39.9995,-105.251,4.5,0.5,1.946,104.3
+0x880_local_niche_020,Flatirons Optical & Eyewear,"Health, Dental & Wellness",Downtown Commercial Core,1710 15th St,40.0167,-105.2756,4.8,0.4,1.792,107.8
+0x880_local_niche_021,Apex Tailoring & Bespoke Suits,Boutique Retail & Food,Downtown Commercial Core,1640 15th St,40.0164,-105.2758,4.6,0.49,1.792,114.2
+0x880_local_niche_022,Chautauqua Sound Recording Lab,Artisan Studio & Crafts,South Foothills District,1200 Baseline Rd,39.9987,-105.278,4.5,0.5,1.099,109.0
+0x880_local_niche_023,Alpine Leatherwork & Bootmakers,Boutique Retail & Food,Pearl Street Promenade,1430 Pearl St,40.0187,-105.2765,4.5,0.5,2.197,97.2
+0x880_local_niche_024,Summit Tea & Botanicals,Boutique Retail & Food,Pearl Street Promenade,1380 Pearl St,40.0185,-105.2775,4.625,0.484,2.197,91.9
+0x880_local_niche_025,Boulder Ridge Natural Perfumery,Boutique Retail & Food,Downtown Commercial Core,1850 14th St,40.0168,-105.2767,4.333,0.471,1.386,74.3
+0x880_local_niche_026,Green Mountain Woodcraft Co,Artisan Studio & Crafts,South Foothills District,3600 Table Mesa Dr,39.986,-105.25,4.5,0.5,1.099,117.5
+0x880_local_niche_027,Sanitas Specialty Skincare Bar,"Health, Dental & Wellness",Downtown Commercial Core,1915 15th St,40.0159,-105.2754,4.333,0.471,1.946,114.2
+0x880_local_niche_028,Front Range Micro-Creamery,Commercial Dining & Bistro,Pearl Street Promenade,1215 Pearl St,40.0181,-105.2802,4.667,0.471,1.386,91.3
+0x880_local_niche_029,Flatirons Custom Framing & Art,Artisan Studio & Crafts,Downtown Commercial Core,1725 15th St,40.0167,-105.2754,4.667,0.471,1.386,137.0
+0x880_local_niche_030,Boulder Peak Barbers & Shave,"Health, Dental & Wellness",Pearl Street Promenade,1115 Pearl St,40.0179,-105.2812,4.667,0.471,1.386,103.7
+0x880_neglected_utility_001,Valley Industrial Equipment Yard,Commercial Logistics & Storage,North Industrial Corridor,4800 Valmont Rd,40.035,-105.238,2.351,0.779,3.638,105.3
+0x880_neglected_utility_002,Eastside Storage & Parcel Hub,Commercial Logistics & Storage,East Tech Commerce Hub,5450 Arapahoe Ave,40.0158,-105.225,2.48,0.7,3.258,116.9
+0x880_neglected_utility_003,Midtown Scrap Metals & Salvage,Waste & Salvage Management,North Industrial Corridor,3600 28th St,40.0355,-105.2575,2.0,0.804,3.555,126.1
+0x880_neglected_utility_004,Legacy Parking Management Group,Commercial Parking Facilities,Downtown Commercial Core,1900 11th St,40.0165,-105.2815,2.172,0.833,3.401,110.0
+0x880_neglected_utility_005,Pioneer Waste & Roll-Off Bins,Waste & Salvage Management,North Industrial Corridor,4900 63rd St,40.039,-105.215,2.229,0.721,3.584,101.8
+0x880_neglected_utility_006,Continental Forklift & Heavy Rental,Commercial Logistics & Storage,North Industrial Corridor,3750 Sterling Cir,40.037,-105.242,2.125,0.927,3.497,112.8
+0x880_neglected_utility_007,Front Range Rail Cargo Depot,Commercial Logistics & Storage,East Tech Commerce Hub,5600 Arapahoe Ave,40.016,-105.221,2.176,0.856,3.555,118.3
+0x880_neglected_utility_008,Boulder Commercial Pallet Exchange,Commercial Logistics & Storage,North Industrial Corridor,3850 28th St,40.0375,-105.256,2.207,0.996,3.401,123.1
+0x880_neglected_utility_009,Summit Concrete Batch Yard,Commercial Logistics & Storage,North Industrial Corridor,4650 Valmont Rd,40.0335,-105.2425,2.375,0.904,3.219,119.5
+0x880_neglected_utility_010,Apex Industrial Chemical Supply,Waste & Salvage Management,East Tech Commerce Hub,5100 Pearl Pkwy,40.027,-105.233,2.333,0.816,3.332,111.1
+0x880_neglected_utility_011,Midway Heavy Tow & Impound,Commercial Logistics & Storage,North Industrial Corridor,4950 Valmont Rd,40.036,-105.235,2.167,0.986,3.219,103.0
+0x880_neglected_utility_012,Boulder Auto Wrecking Yard,Waste & Salvage Management,North Industrial Corridor,5000 63rd St,40.04,-105.214,2.185,0.818,3.332,117.3
+0x880_neglected_utility_013,Flatirons Truck Parking Plaza,Commercial Parking Facilities,East Tech Commerce Hub,5800 Arapahoe Ave,40.0162,-105.217,2.667,0.943,3.434,120.2
+0x880_neglected_utility_014,Rocky Mountain Aggregate Co,Commercial Logistics & Storage,North Industrial Corridor,3900 Sterling Cir,40.038,-105.241,2.2,0.781,3.714,115.6
+0x880_neglected_utility_015,Universal Scrap & Recycling Yard,Waste & Salvage Management,East Tech Commerce Hub,5250 Pearl Pkwy,40.0275,-105.231,2.25,0.901,2.833,108.6
+0x880_neglected_utility_016,Centennial Heavy Equipment Repair,Commercial Logistics & Storage,North Industrial Corridor,4550 Valmont Rd,40.033,-105.2445,2.051,0.904,3.689,115.3
+0x880_neglected_utility_017,Pioneer Demolition Waste Depot,Waste & Salvage Management,North Industrial Corridor,5100 63rd St,40.041,-105.213,2.188,0.726,2.833,106.5
+0x880_neglected_utility_018,Front Range Bulk Fuel Transfer,Commercial Logistics & Storage,East Tech Commerce Hub,6000 Arapahoe Ave,40.0165,-105.213,2.207,0.846,3.401,104.2
+0x880_neglected_utility_019,Metro Municipal Impound Lot,Commercial Parking Facilities,North Industrial Corridor,4600 28th St,40.042,-105.255,2.371,0.865,3.584,102.2
+0x880_neglected_utility_020,Boulder Valley Asphalt Depot,Commercial Logistics & Storage,North Industrial Corridor,4450 Valmont Rd,40.0325,-105.246,2.394,1.071,3.526,106.2
+0x880_neglected_utility_021,Apex Scrap Steel & Processing,Waste & Salvage Management,East Tech Commerce Hub,5400 Pearl Pkwy,40.028,-105.228,2.125,0.96,3.497,112.6
+0x880_neglected_utility_022,Summit Industrial Tank Storage,Commercial Logistics & Storage,East Tech Commerce Hub,5700 Arapahoe Ave,40.0161,-105.219,2.225,0.935,3.714,118.0
+0x880_neglected_utility_023,Colorado Heavy Freight Terminal,Commercial Logistics & Storage,East Tech Commerce Hub,6100 Arapahoe Ave,40.0167,-105.211,2.407,0.733,3.332,103.0
+0x880_neglected_utility_024,Continental Metal Reclamation,Waste & Salvage Management,North Industrial Corridor,5200 63rd St,40.042,-105.212,2.231,0.973,3.689,106.5
+0x880_neglected_utility_025,Legacy Municipal Transfer Station,Waste & Salvage Management,North Industrial Corridor,4500 28th St,40.0415,-105.2555,2.375,0.796,3.714,115.4
